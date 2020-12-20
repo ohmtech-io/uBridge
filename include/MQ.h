@@ -116,6 +116,33 @@ public:
 		delete [] buffer;
 		return message;
 	}
+
+	/*
+	 * Reads and returns one message synchronously (with Timeout, in seconds) from the Message Queue.
+	 * This is a SYNC method, so it will block if there is no data to read
+	 * until a message becomes available or the timeout has elapsed
+	 */
+	std::string readMessage(int timeout) {
+		// Default max message size is set to 8192 bytes, so we create a 9000 byte buffer
+		char *buffer = new char[9000];
+		memset(buffer, '\0', 9000);
+
+		struct timespec tm;
+		clock_gettime(CLOCK_REALTIME, &tm);
+
+		// std::cout << "Timens:" << tm.tv_nsec  << " Time s:" << tm.tv_sec << std::endl;
+		tm.tv_sec += timeout;
+
+		if (mq_timedreceive(_mqd1, buffer, 9000, &_prio, &tm) == -1) {
+			std::cout << "Error reading message: timed-out." << std::endl;
+			exit(1);
+		}
+		std::string message(buffer);
+		delete [] buffer;
+		return message;
+	}
+
+
 private:
 	EndpointType _type;
 	mqd_t _mqd1;

@@ -12,7 +12,7 @@ project(Ubridge)
 #   include
 # )
 # SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
-# add_compile_options(-pthread -lrt -Wall)
+add_compile_options(-Wall)
 
 set(LIBS -lrt -lpthread)
 
