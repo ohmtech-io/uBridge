@@ -55,6 +55,7 @@ public:
 	 */
 	virtual ~MQ() {
 		mq_close(_mqd1);
+		// mq_unlink("/ubridge_1"); //DM
 		mq_close(_mqd2);
 	}
 
