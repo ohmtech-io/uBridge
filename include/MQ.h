@@ -21,14 +21,21 @@
  * MessageQueue Class
  */
 class MQ {
+
 public:
 	/*
-	 * Endpoint types
-	 */
-	enum EndpointType {
-		Client,
-		Server
-	};
+ * Endpoint types
+ */
+enum EndpointType {
+	Client,
+	Server
+};
+enum ErrorType {
+	Timeout,
+	Unknown
+};
+
+public:
 	/*
 	 * Constructor - Constructs new message queue with specified ID
 	 */
@@ -109,8 +116,10 @@ public:
 		char *buffer = new char[9000];
 		memset(buffer, '\0', 9000);
 		if (mq_receive(_mqd1, buffer, 9000, &_prio) == -1) {
-			std::cout << "Error reading message" << std::endl;
-			exit(1);
+			// std::cout << "Error reading message" << std::endl;
+			// exit(1);
+			ErrorType error = Unknown;
+			throw error;
 		}
 		std::string message(buffer);
 		delete [] buffer;
@@ -134,14 +143,15 @@ public:
 		tm.tv_sec += timeout;
 
 		if (mq_timedreceive(_mqd1, buffer, 9000, &_prio, &tm) == -1) {
-			std::cout << "Error reading message: timed-out." << std::endl;
-			exit(1);
+			// std::cout << "Error reading message: timed-out." << std::endl;
+			// exit(1);
+			ErrorType error = Timeout;
+			throw error;
 		}
 		std::string message(buffer);
 		delete [] buffer;
 		return message;
 	}
-
 
 private:
 	EndpointType _type;
