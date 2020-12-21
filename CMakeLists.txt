@@ -3,18 +3,13 @@ set(CMAKE_CXX_STANDARD 14)
 
 project(Ubridge)
 
-# add_library(chucknorris
-#     include/ChuckNorris.hpp
-#     src/ChuckNorris.cpp
-# )
-
 # include_directories(
 #   include
 # )
-# SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
+
 add_compile_options(-Wall)
 
-set(LIBS -lrt -lpthread)
+set(LIBS -lrt -lpthread -ldl)
 
 add_executable(ubridge
 	src/main.cpp
