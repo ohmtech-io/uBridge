@@ -3,9 +3,7 @@
 #include <functional>
 #include "MQ.h"
 #define LOGURU_WITH_STREAMS 1
-#include <loguru.hpp>
-
-
+#include <loguru/loguru.hpp>
 
 using namespace std;
 
@@ -23,15 +21,13 @@ public:
 	};
 
 	int start() {
-		LOG_S(1) << "Config Server listening on: " << rrMsgQname;
+		loguru::g_stderr_verbosity = 5;
+		LOG_S(INFO) << "Config Server listening on: " << rrMsgQname;
 
 		//capturing the lambda with "this" gives access to all members of the class
 		rrMqsQ->listen([this](string message){
-			// cout << "Received: " << message << endl;
-			LOG_S(6) << "received :" << message;
-			rrMqsQ->sendMessage("Command received!");
-
-			// int value = 19;
+			LOG_S(3) << "received raw:" << message;
+			// rrMqsQ->sendMessage("Command received!");
 			_cb(message);
 		});
 		return 0;
