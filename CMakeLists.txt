@@ -8,6 +8,7 @@ project(Ubridge)
 # )
 
 add_compile_options(-Wall)
+# add_compile_options(-Wall -O2)
 
 set(LIBS -lrt -lpthread -ldl)
 
