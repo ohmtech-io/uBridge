@@ -15,37 +15,28 @@
 
 using namespace std;
 
-ubridge::config cfg;
+// ubridge::config cfg;
 
-const std::string sampleMessg = "{\"temperature\": 24.68, \"pressure\": 1019.38, \"humidity\": 45.64, \"gasResistance\": 597617, \"IAQ\": 28.3, \"iaqAccuracy\": 3, \"eqCO2\": 511.21, \"eqBreathVOC\": 0.52}";
+// void cfgHandler(json& jmessage);
+/*note: the messageQueue name defined here has to be consistent in the client */
+// ReqRepServer rrServer("configCH", &cfgHandler);
 
 
-int rrParseMessage(string& message, json& jrecv){
-	try{
-		jrecv = json::parse(message);
-		LOG_S(5) << "Rx parsed JSON: " << std::setw(2) << jrecv;
-		return 0;
-	} catch (json::exception& e) {
-		LOG_S(WARNING) << "Error parsing JSON: " << e.what();
-		return -1;
-	}
-}
+// const std::string sampleMessg = "{\"temperature\": 24.68, \"pressure\": 1019.38, \"humidity\": 45.64, \"gasResistance\": 597617, \"IAQ\": 28.3, \"iaqAccuracy\": 3, \"eqCO2\": 511.21, \"eqBreathVOC\": 0.52}";
 
-void rrHandler(string& message){
-	LOG_S(6) << "confHandler> message: " << message;
+// void cfgHandler(json& jmessage){
+// 	LOG_S(6) << "confHandler> JSON message: " << jmessage;
 
-	json jrecv;
+// 	/*we can't use the arbitrary_types feature to fill the config here, if one key is missing, or doesn't match, it fails*/
+// 	if (jmessage.contains("maxDevices")) cfg.maxDevices = jmessage["maxDevices"];
+// 	if (jmessage.contains("devNameBase")) cfg.devNameBase = jmessage["devNameBase"];
 
-	if (!rrParseMessage(message, jrecv)){
-		/*we can't use the arbitrary_types feature to fill the config here, if one key is missing, or doesn't match, it fails*/
-		if (jrecv.contains("maxDevices")) cfg.maxDevices = jrecv["maxDevices"];
-		if (jrecv.contains("devNameBase")) cfg.devNameBase = jrecv["devNameBase"];
-	}
+// 	/* just checking the results..*/
+// 	json j = cfg;
+// 	LOG_S(INFO) << "actual config: " << j;
 
-	/* just checking the results..*/
-	json j = cfg;
-	LOG_S(INFO) << j;
-}
+// 	rrServer.rrSendResponse("{\"status\":\"OK\"}");
+// }
 
 int main(int argc, char *argv[])
 {
@@ -101,10 +92,11 @@ int main(int argc, char *argv[])
 	// 	}
 	// 	this_thread::sleep_for(chrono::milliseconds(100));
 	// }
+	using namespace ubridge;
 
-	/*note: the messageQueue name defined here has to be consistent in the client */
-	ReqRepServer rrServer("configCH", &rrHandler);
-	rrServer.start();
+	string cfgCHname = "configCH";
+	Ubridge ubridge(cfgCHname);
+	ubridge.start();
 
 	while(true){
 		this_thread::sleep_for(chrono::milliseconds(100));
