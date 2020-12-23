@@ -39,7 +39,7 @@ public:
 	/*
 	 * Constructor - Constructs new message queue with specified ID
 	 */
-	MQ(std::string id, EndpointType type) : _type(type) {
+	MQ(const std::string& id, EndpointType type) : _type(type) {
 		std::string name1 = "/" + id + "_1";
 		std::string name2 = "/" + id + "_2";
 		if (type == EndpointType::Server) {

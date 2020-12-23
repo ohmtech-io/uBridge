@@ -24,10 +24,43 @@ int main(int argc, char *argv[])
 	// loguru::init(argc, argv);
 
 	MQ *msgQ;
-	
-	// Only show most relevant things on stderr:
-	msgQ = new MQ("configCH", MQ::EndpointType::Client);
+	msgQ = new MQ(cfg.configChName, MQ::EndpointType::Client);
 
+	LOG_S(INFO) << "Start client - Config ch: " << cfg.configChName;
+
+	/* wait for ubridge config server */
+	{
+		int timeout = 1; //seconds
+		std::string message;
+		bool serverOnline = false;
+		do {
+				msgQ->sendMessage("{\"ping\":1}");
+				LOG_S(5) << ">> PING >>";
+
+			try 
+			{
+				/* blocking*/
+				message =  msgQ->readMessage(timeout);
+
+				// json jmessage;
+				// if (0 == parseMessage(message, jmessage)){
+				// 	serverOnline = true;
+				// }
+				serverOnline = true;
+				// std::cout << "Received: " << message << std::endl;
+				LOG_S(5) << "Received: " << message;
+			} 
+			catch (MQ::ErrorType error)
+			{
+				if (error == 0){
+				// if (error == MQ::ErrorType::Timeout){
+					LOG_S(WARNING) << "Message read timeout";	
+				} else {
+					LOG_S(WARNING) << "Error reading msg - ErrorType: " << error;
+				}	
+			}		
+		} while (!serverOnline);
+	}
 	// ubridge::config cfg;
 	// cfg.maxDevices = 2;
 	// json jsoncfg = cfg;
@@ -41,6 +74,7 @@ int main(int argc, char *argv[])
 
     /* serialize and send */
 	msgQ->sendMessage(jsoncfg.dump());
+	LOG_S(5) << "SEND: " << jsoncfg;
 
 	std::string message;
 	int timeout = 3; //seconds

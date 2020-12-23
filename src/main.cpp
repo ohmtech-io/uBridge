@@ -1,6 +1,10 @@
 #include <iostream>
 #include <chrono>
 #include <iomanip>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 
 #define LOGURU_WITH_STREAMS 1
 #include <loguru/loguru.hpp>
@@ -13,68 +17,24 @@
 #include "ubridge.h"
 
 
+#include <nngpp/nngpp.h>
+#include <nngpp/protocol/req0.h>
+#include <nngpp/protocol/rep0.h>
+
 using namespace std;
 
-// ubridge::config cfg;
-
-// void cfgHandler(json& jmessage);
-/*note: the messageQueue name defined here has to be consistent in the client */
-// ReqRepServer rrServer("configCH", &cfgHandler);
 
 
-// const std::string sampleMessg = "{\"temperature\": 24.68, \"pressure\": 1019.38, \"humidity\": 45.64, \"gasResistance\": 597617, \"IAQ\": 28.3, \"iaqAccuracy\": 3, \"eqCO2\": 511.21, \"eqBreathVOC\": 0.52}";
-
-// void cfgHandler(json& jmessage){
-// 	LOG_S(6) << "confHandler> JSON message: " << jmessage;
-
-// 	/*we can't use the arbitrary_types feature to fill the config here, if one key is missing, or doesn't match, it fails*/
-// 	if (jmessage.contains("maxDevices")) cfg.maxDevices = jmessage["maxDevices"];
-// 	if (jmessage.contains("devNameBase")) cfg.devNameBase = jmessage["devNameBase"];
-
-// 	/* just checking the results..*/
-// 	json j = cfg;
-// 	LOG_S(INFO) << "actual config: " << j;
-
-// 	rrServer.rrSendResponse("{\"status\":\"OK\"}");
-// }
 
 int main(int argc, char *argv[])
 {
-	// MQ *msgQ;
 
 	loguru::g_preamble_date = false;
 	loguru::g_preamble_time = false;
+	loguru::g_stderr_verbosity = 5;
 	loguru::init(argc, argv);
 
-	// bool client1_Subs = false;
-
 	LOG_S(INFO) << "--- Initializing **u-bridge**... ---";
-
-	
-	
-	// cfg.maxDevices = 5;
-	
-	/* use the built-in conversion thanks to the NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE macro*/
-	// json jcfg = cfg;
-	
-	// convert to JSON: copy each value into the JSON object (manually)
-	// jcfg["chName"] = cfg.chName;
-	// jcfg["lalala"] = cfg.lalala;
-	// jcfg["maxDevices"] = cfg.maxDevices;
-
-	// // LOG_S(INFO) << std::setw(2) << jcfg;
-	// LOG_S(INFO) << jcfg;
-
-
-	// conversion: json -> struct
-	// auto jc2 = jcfg.get<ubridge::config>();
-	// LOG_S(INFO) << jc2.chName;
-	// json j2;
-	// j2 = json::parse(sampleMessg);
-
-	//  std::cout << std::setw(2) << j2 << '\n';
-
-	//  std::cout << j2["IAQ"] << '\n';
 
 	// msgQ = new MQ("ubridge", MQ::EndpointType::Server);
 	// msgQ->listen([msgQ, &client1_Subs](string message){
@@ -94,12 +54,18 @@ int main(int argc, char *argv[])
 	// }
 	using namespace ubridge;
 
-	string cfgCHname = "configCH";
-	Ubridge ubridge(cfgCHname);
-	ubridge.start();
+	Bridge app;
+	app.start();
 
+	// nng::socket rep_sock = nng::rep::open();
+	// rep_sock.listen("ipc:///ubridge/configSock");
+
+	// nng::socket rep_socket = nng::rep::open();
+	// rep_socket.listen( "ipc://ubridgeConf" );
+	
 	while(true){
 		this_thread::sleep_for(chrono::milliseconds(100));
+		// LOG_S(INFO) << "-";
 	}
 		
 

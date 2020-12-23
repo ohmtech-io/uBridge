@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_CXX_STANDARD 14)
 
 project(Ubridge)
@@ -7,10 +7,12 @@ project(Ubridge)
 #   include
 # )
 
-add_compile_options(-Wall)
+find_package(nng)
+
+add_compile_options(-Wall -ggdb -O0)
 # add_compile_options(-Wall -O2)
 
-set(LIBS -lrt -lpthread -ldl)
+set(LIBS -lrt -lnng -lpthread -ldl)
 
 add_executable(ubridge
 	src/main.cpp
