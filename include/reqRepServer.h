@@ -5,7 +5,6 @@
 #include <loguru/loguru.hpp>
 #include <nlohmann/json.hpp>
 #include <nngpp/nngpp.h>
-#include <nngpp/protocol/req0.h>
 #include <nngpp/protocol/rep0.h>
 #include <cstdio>
 #include <thread>
@@ -39,9 +38,6 @@ public:
 	};
 
 	int start() {
-		loguru::g_stderr_verbosity = 5;
-
-		
 		try {
 			/* REP socket starts listening */
 			rep_sock.listen(rrSockUrl);	
@@ -56,31 +52,23 @@ public:
 		std::thread _receiveThread(&ReqRepServer::receiveThread, this);
 		_receiveThread.detach();
 		
-		/* Register a lambda expr. as async receiver.
-			capturing the lambda with "this" gives access to all members of the class*/
-		// rrMqsQ->listen([this](string message){
-		// 	LOG_S(3) << "received raw:" << message;
-		// 	// rrMqsQ->sendMessage("Command received!");
-
-		// 	json jmessage;
-		// 	if (0 == parseMessage(message, jmessage)){
-		// 		_jsonCb(jmessage);	
-		// 	}
-		// });
 		return 0;
 	};
 
 	void sendResponse(std::string rawMsg) {
 		// rrMqsQ->sendMessage(rawMsg);
+		LOG_S(5) << "Sending response " << rawMsg;
 	}
 
 protected:
 	void receiveThread() {
+		LOG_S(INFO) << "listening for requests..";
 		while (true) {
-			LOG_S(INFO) << "listening for requests..";
 			// rep receives a message (blocking)
 			// nng::buffer rep_buf = rep_sock.recv();
 			// LOG_S(INFO) << "Received request: " << rep_buf;	
+
+			//tesing: nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"hello\":1}";
 			auto message = rep_sock.recv_msg();
 			auto body = message.body().data<char>();
 			LOG_S(INFO) << "Received request: " << body;	
@@ -89,6 +77,8 @@ protected:
 			if (0 == parseMessage(body, jmessage)){
 				_jsonCb(jmessage);	
 			}
+
+			LOG_S(8) << "listening new requests";
 		}
 	}
 
