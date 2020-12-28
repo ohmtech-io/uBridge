@@ -67,6 +67,8 @@ private:
 				portList.push_back(file.path());	 
 			}
 		}
+
+		
 	}
 
 	void sendResponse(requestType_t& requestType) {
@@ -78,7 +80,7 @@ private:
 				response = "{\"pong\":1}";
 				break;
 			case getConfig:
-				findPorts(cfg.devNameBase, portList);
+				// findPorts(cfg.devNameBase, portList);
 				// LOG_S(6) << "Available ports: " << portList.front();
 				response = jcfg.dump();
 				break;

@@ -8,13 +8,18 @@
 
 #include <nlohmann/json.hpp>
 
-#include "MQ.h"
+#include <nngpp/nngpp.h>
+#include <nngpp/protocol/rep0.h>
+
+// #include "MQ.h"
 #include "ubridge.h"
+#include "reqRepClient.h"
 
 // for convenience
 using json = nlohmann::json;
 
 ubridge::config cfg;
+
 
 int main(int argc, char *argv[])
 {
@@ -23,44 +28,13 @@ int main(int argc, char *argv[])
 	loguru::g_preamble_time = false;
 	// loguru::init(argc, argv);
 
-	MQ *msgQ;
-	msgQ = new MQ(cfg.configChName, MQ::EndpointType::Client);
+	ReqRepClient client(cfg.configSockUrl);
 
-	LOG_S(INFO) << "Start client - Config ch: " << cfg.configChName;
 
+	LOG_S(INFO) << "Start clienting - Config ch: " ;
+	client.connect();
 	/* wait for ubridge config server */
-	{
-		int timeout = 1; //seconds
-		std::string message;
-		bool serverOnline = false;
-		do {
-				msgQ->sendMessage("{\"ping\":1}");
-				LOG_S(5) << ">> PING >>";
 
-			try 
-			{
-				/* blocking*/
-				message =  msgQ->readMessage(timeout);
-
-				// json jmessage;
-				// if (0 == parseMessage(message, jmessage)){
-				// 	serverOnline = true;
-				// }
-				serverOnline = true;
-				// std::cout << "Received: " << message << std::endl;
-				LOG_S(5) << "Received: " << message;
-			} 
-			catch (MQ::ErrorType error)
-			{
-				if (error == 0){
-				// if (error == MQ::ErrorType::Timeout){
-					LOG_S(WARNING) << "Message read timeout";	
-				} else {
-					LOG_S(WARNING) << "Error reading msg - ErrorType: " << error;
-				}	
-			}		
-		} while (!serverOnline);
-	}
 	// ubridge::config cfg;
 	// cfg.maxDevices = 2;
 	// json jsoncfg = cfg;
@@ -73,27 +47,8 @@ int main(int argc, char *argv[])
     // jsoncfg = {{"maxDevices", 3}, {"devNameBase", "/dev/andaadormir"}};
 
     /* serialize and send */
-	msgQ->sendMessage(jsoncfg.dump());
-	LOG_S(5) << "SEND: " << jsoncfg;
 
-	std::string message;
-	int timeout = 3; //seconds
 
-	while(true){
-		try 
-		{
-			/* blocking*/
-			message =  msgQ->readMessage(timeout);
-			// std::cout << "Received: " << message << std::endl;
-			LOG_S(5) << "Received: " << message;
-		} 
-		catch (MQ::ErrorType error)
-		{
-			LOG_S(WARNING) << "Error reading msg - ErrorType: " << error;
-			// std::cout << "Error reading msg - ErrorType: " << error << std::endl;	
-		}		
-	}
 
-	delete msgQ;
 	return 0;
 }

@@ -5,72 +5,63 @@
 #include <loguru/loguru.hpp>
 #include <nlohmann/json.hpp>
 #include <nngpp/nngpp.h>
-#include <nngpp/protocol/rep0.h>
+#include <nngpp/protocol/req0.h>
 #include <cstdio>
 #include <thread>
 
-#include "MQ.h"
 
 using namespace std;
 // for convenience
 using json = nlohmann::json;
 
-// extern loguru::g_stderr_verbosity;
 
-
-class ReqRepServer {
+class ReqRepClient {
 public:
-	ReqRepServer(const char* url, function<void(json&)> cb) {
+	ReqRepClient(const char* url) {
 
-		// create a socket for the rep protocol
-		rep_sock = nng::rep::open();
-
-		// rrMqsQ = new MQ(name, MQ::EndpointType::Server);
-		// rrMsgQname = name;
+		// create a socket for the req protocol
+		req_sock = nng::req::open();
 
 		rrSockUrl = url;
 
-		_jsonCb = cb;
+		// _jsonCb = cb;
 	}
 
-	~ReqRepServer() {
+	~ReqRepClient() {
 		// delete rrMqsQ;
 	};
 
-	int start() {
+	int connect() {
 		try {
-			/* REP socket starts listening */
-			rep_sock.listen(rrSockUrl);	
+			
+			/* REQ dials and establishes a connection */
+			req_sock.dial(rrSockUrl);	
+
+			req_sock.send("{\"ping\":0}");
+			
+			auto buf = req_sock.recv();
+
+			auto messageRaw = buf.data<char>();
+
+			LOG_S(INFO) << "received response: " << messageRaw;
+
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
-			// printf( "%s: %s\n", e.who(), e.what() );
 			return 1;
 		}	
 
-		LOG_S(INFO) << "Config Server listening on: " << rrSockUrl;
+		// LOG_S(INFO) << "Request socket connected";
 
-		std::thread _receiveThread(&ReqRepServer::receiveThread, this);
-		_receiveThread.detach();
+		// std::thread _receiveThread(&ReqRepServer::receiveThread, this);
+		// _receiveThread.detach();
 		
 		return 0;
 	};
 
-	void sendResponse(const std::string rawMsg) {		
-		
-		try {
-			LOG_S(5) << "Sending response " << rawMsg;
-
-			auto msg = nng::make_msg(0);
-
-			//TODO: this is hacky, find the proper way to pass the string by reference
-			msg.body().append({rawMsg.c_str(), rawMsg.length()});
-
-			rep_sock.send( std::move(msg) );
-
-		} catch( const nng::exception& e ) {
-			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
-		}
-	}
+	void sendResponse(std::string rawMsg) {
+		// rrMqsQ->sendMessage(rawMsg);
+		LOG_S(5) << "Sending response " << rawMsg;
+	} 
 
 protected:
 	void receiveThread() {
@@ -81,7 +72,7 @@ protected:
 			// LOG_S(INFO) << "Received request: " << rep_buf;	
 
 			//tesing: nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"hello\":1}";
-			auto message = rep_sock.recv_msg();
+			auto message = req_sock.recv_msg();
 			auto body = message.body().data<char>();
 			LOG_S(INFO) << "Received request: " << body;	
 
@@ -106,12 +97,10 @@ protected:
 	}
 
 public: 
-	// string rrMsgQname;
 	const char* rrSockUrl;
 
 private:
-	// MQ *rrMqsQ;
-	nng::socket rep_sock;
+	nng::socket req_sock;
 	function<void(string&)> _rawCb;
 	function<void(json&)> _jsonCb;
 };
