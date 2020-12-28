@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+#include <regex>
 #include <nlohmann/json.hpp>
 
 #include "reqRepServer.h"
@@ -15,7 +17,9 @@ namespace ubridge {
 	        int maxDevices = 10;
 	        const char* configSockUrl= "ipc:///tmp/ubridgeConf";
 	};
-	/*https://nlohmann.github.io/json/features/arbitrary_types/*/
+	/*https://nlohmann.github.io/json/features/arbitrary_types/
+	this enable us to convert the class to json (json jcfg = config)
+	*/
 	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(config, appVersionStr, devNameBase, maxDevices)
 
 	enum requestType_t {
@@ -46,6 +50,25 @@ public:
 	}
 
 private:
+	void findPorts(std::string &devNameBase, std::vector<std::string> &portList) {
+
+		//TODO: mutex here
+		portList.clear();
+
+		std::string path = "/dev";
+
+		const std::regex expr(devNameBase + "\\d");
+
+		/* list files on /dev and filter with the provided name base*/
+		for (const auto & file : std::filesystem::directory_iterator(path)) {
+
+			if (std::regex_match(file.path().string(), expr)) {
+			 	LOG_S(6) << "Port found: " << file.path();
+				portList.push_back(file.path());	 
+			}
+		}
+	}
+
 	void sendResponse(requestType_t& requestType) {
 		std::string response;
 		json jcfg = cfg;
@@ -55,6 +78,8 @@ private:
 				response = "{\"pong\":1}";
 				break;
 			case getConfig:
+				findPorts(cfg.devNameBase, portList);
+				// LOG_S(6) << "Available ports: " << portList.front();
 				response = jcfg.dump();
 				break;
 			case setConfig:
@@ -120,6 +145,7 @@ public:
 private:
 	ReqRepServer *rrServer;
 	requestType_t requestType;
+	std::vector<std::string> portList;
 };
 
 } //namespace ubridge

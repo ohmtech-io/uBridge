@@ -58,7 +58,7 @@ public:
 	void sendResponse(std::string rawMsg) {
 		// rrMqsQ->sendMessage(rawMsg);
 		LOG_S(5) << "Sending response " << rawMsg;
-	}
+	} 
 
 protected:
 	void receiveThread() {
