@@ -5,31 +5,10 @@
 #include <nlohmann/json.hpp>
 
 #include "reqRepServer.h"
+#include "uBridgeConfig.h"
 
 // for convenience
 using json = nlohmann::json;
-
-namespace ubridge {
-	class config {
-		public:
-			std::string appVersionStr = "0.1";
-	        std::string devNameBase = "/dev/ttyACM";
-	        int maxDevices = 10;
-	        const char* configSockUrl= "ipc:///tmp/ubridgeConf";
-	};
-	/*https://nlohmann.github.io/json/features/arbitrary_types/
-	this enable us to convert the class to json (json jcfg = config)
-	*/
-	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(config, appVersionStr, devNameBase, maxDevices)
-
-	enum requestType_t {
-		setConfig,
-		getConfig,
-		getChannels,
-		ping,
-		unrecognized,
-	};
-}
 
 namespace ubridge {
 
@@ -67,8 +46,6 @@ private:
 				portList.push_back(file.path());	 
 			}
 		}
-
-		
 	}
 
 	void sendResponse(requestType_t& requestType) {
@@ -80,14 +57,15 @@ private:
 				response = "{\"pong\":1}";
 				break;
 			case getConfig:
-				// findPorts(cfg.devNameBase, portList);
-				// LOG_S(6) << "Available ports: " << portList.front();
 				response = jcfg.dump();
 				break;
 			case setConfig:
 				response = "{\"status\":\"OK\"}";
 				break;
-			case getChannels:
+			case getDevices:
+				findPorts(cfg.devNameBase, portList);
+				// LOG_S(6) << "Available ports: " << portList.front();
+				response = "{\"devices\":0}";
 				break;
 			case unrecognized:
 				response = "{\"status\":\"ERROR\",\"error\":\"command not valid\"}";
@@ -113,7 +91,6 @@ private:
 				cfg.devNameBase = jmessage["devNameBase"];
 				ret = 0;
 			}
-
 			/* just checking the results..*/
 			json j = cfg;
 			LOG_S(3) << "actual config: " << j;
@@ -121,6 +98,11 @@ private:
 		if (jmessage["command"] == "getConfig") {
 			// nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"command\":\"getConfig\"}";
 			requestType = getConfig;	
+			ret = 0;
+		}
+		if (jmessage["command"] == "getDevices") {
+			// nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"command\":\"getDevices\"}";
+			requestType = getDevices;	
 			ret = 0;
 		}
 		return ret;

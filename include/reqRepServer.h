@@ -58,11 +58,11 @@ public:
 	void sendResponse(const std::string rawMsg) {		
 		
 		try {
-			LOG_S(5) << "Sending response " << rawMsg;
+			LOG_S(INFO) << "Send response: " << rawMsg;
 
 			auto msg = nng::make_msg(0);
 
-			//TODO: this is hacky, find the proper way to pass the string by reference
+			//TODO: this is hacky, find the proper way to pass the string by reference on the msg constructor
 			msg.body().append({rawMsg.c_str(), rawMsg.length()});
 
 			rep_sock.send( std::move(msg) );

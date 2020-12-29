@@ -12,14 +12,14 @@
 
 #include <nlohmann/json.hpp>
 
-#include "MQ.h"
-#include "reqRepServer.h"
-#include "ubridge.h"
-
+// #include "MQ.h"
+// #include "reqRepServer.h"
 
 #include <nngpp/nngpp.h>
 #include <nngpp/protocol/req0.h>
 #include <nngpp/protocol/rep0.h>
+
+#include "ubridge.h"
 
 using namespace std;
 
@@ -31,7 +31,9 @@ int main(int argc, char *argv[])
 
 	loguru::g_preamble_date = false;
 	loguru::g_preamble_time = false;
-	loguru::g_stderr_verbosity = 5;
+
+	//TODO: get verbosity from argv...
+	loguru::g_stderr_verbosity = 6;
 	loguru::init(argc, argv);
 
 	LOG_S(INFO) << "--- Initializing **u-bridge**... ---";
@@ -64,7 +66,7 @@ int main(int argc, char *argv[])
 	// rep_socket.listen( "ipc://ubridgeConf" );
 	
 	while(true){
-		this_thread::sleep_for(chrono::milliseconds(100));
+		this_thread::sleep_for(chrono::milliseconds(1000));
 		// LOG_S(INFO) << "-";
 	}
 		
