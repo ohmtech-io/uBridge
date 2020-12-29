@@ -12,11 +12,13 @@
 #include <nngpp/protocol/rep0.h>
 
 // #include "MQ.h"
-#include "ubridge.h"
+#include "uBridgeConfig.h"
 #include "reqRepClient.h"
 
 // for convenience
 using json = nlohmann::json;
+
+using namespace std;
 
 ubridge::config cfg;
 
@@ -31,10 +33,23 @@ int main(int argc, char *argv[])
 	ReqRepClient client(cfg.configSockUrl);
 
 
-	LOG_S(INFO) << "Start clienting - Config ch: " ;
-	client.connect();
-	/* wait for ubridge config server */
+	LOG_S(INFO) << "*** Starting client... ***" ;
+	
+	LOG_S(INFO) << "Pinging server..." ;
+	if (client.connect() != 0) {
+		/* wait for ubridge config server */
+		LOG_S(INFO) << "Server not found!" ;	
+		LOG_S(INFO) << "Waiting for server..." ;	
+		while (client.connect() !=0) {
+			this_thread::sleep_for(chrono::milliseconds(1000));
+		}
+	}
+		
+	json deviceList;
 
+	client.getDevices(deviceList);
+
+	LOG_S(INFO) << "Connected devices: " << deviceList;	
 	// ubridge::config cfg;
 	// cfg.maxDevices = 2;
 	// json jsoncfg = cfg;

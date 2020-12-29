@@ -10,7 +10,7 @@
 #include <thread>
 
 
-using namespace std;
+// using namespace std;
 // for convenience
 using json = nlohmann::json;
 
@@ -33,59 +33,55 @@ public:
 
 	int connect() {
 		try {
-			
 			/* REQ dials and establishes a connection */
 			req_sock.dial(rrSockUrl);	
+		} catch( const nng::exception& e ) {
+			LOG_S(1) << "nng Exception: " << e.who() << e.what();			
+			return 1;
+		}	
 
+		try {
+			LOG_S(5) << "Send {\"ping\"} request.";		
 			req_sock.send("{\"ping\":0}");
 			
 			auto buf = req_sock.recv();
 
 			auto messageRaw = buf.data<char>();
-
-			LOG_S(INFO) << "received response: " << messageRaw;
-
+			LOG_S(5) << "received response: " << messageRaw;
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
-			return 1;
+			return -1;
 		}	
-
-		// LOG_S(INFO) << "Request socket connected";
+		LOG_S(INFO) << "Server OK";
 
 		// std::thread _receiveThread(&ReqRepServer::receiveThread, this);
 		// _receiveThread.detach();
 		
 		return 0;
-	};
-
-	void sendResponse(std::string rawMsg) {
-		// rrMqsQ->sendMessage(rawMsg);
-		LOG_S(5) << "Sending response " << rawMsg;
-	} 
-
-protected:
-	void receiveThread() {
-		LOG_S(INFO) << "listening for requests..";
-		while (true) {
-			// rep receives a message (blocking)
-			// nng::buffer rep_buf = rep_sock.recv();
-			// LOG_S(INFO) << "Received request: " << rep_buf;	
-
-			//tesing: nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"hello\":1}";
-			auto message = req_sock.recv_msg();
-			auto body = message.body().data<char>();
-			LOG_S(INFO) << "Received request: " << body;	
-
-			json jmessage;
-			if (0 == parseMessage(body, jmessage)){
-				_jsonCb(jmessage);	
-			}
-
-			LOG_S(8) << "listening new requests";
-		}
 	}
 
-	int parseMessage(string message, json& jrecv){
+	int getDevices(json &deviceList) {
+		try {
+			LOG_S(5) << "Request connected devices.";		
+			req_sock.send("{\"command\":\"getDevices\"}");
+			
+			auto buf = req_sock.recv();
+
+			auto messageRaw = buf.data<char>();
+			LOG_S(5) << "received response: " << messageRaw;
+
+			if (0 == parseMessage(messageRaw, deviceList)){
+				return 0;
+			}
+		} catch( const nng::exception& e ) {
+			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
+			return -1;
+		}
+		return -1;
+	}
+
+protected:
+	int parseMessage(std::string message, json& jrecv){
 		try{
 			jrecv = json::parse(message);
 			LOG_S(5) << "Rx parsed JSON: " << std::setw(2) << jrecv;
@@ -101,6 +97,6 @@ public:
 
 private:
 	nng::socket req_sock;
-	function<void(string&)> _rawCb;
-	function<void(json&)> _jsonCb;
+	std::function<void(std::string&)> _rawCb;
+	std::function<void(json&)> _jsonCb;
 };
