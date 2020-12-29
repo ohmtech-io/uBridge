@@ -9,8 +9,6 @@
 #include <cstdio>
 #include <thread>
 
-#include "MQ.h"
-
 using namespace std;
 // for convenience
 using json = nlohmann::json;
@@ -44,7 +42,7 @@ public:
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 			// printf( "%s: %s\n", e.who(), e.what() );
-			return 1;
+			return -1;
 		}	
 
 		LOG_S(INFO) << "Config Server listening on: " << rrSockUrl;
@@ -77,9 +75,6 @@ protected:
 		LOG_S(INFO) << "listening for requests..";
 		while (true) {
 			// rep receives a message (blocking)
-			// nng::buffer rep_buf = rep_sock.recv();
-			// LOG_S(INFO) << "Received request: " << rep_buf;	
-
 			//tesing: nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"hello\":1}";
 			auto message = rep_sock.recv_msg();
 			auto body = message.body().data<char>();

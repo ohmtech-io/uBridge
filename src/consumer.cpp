@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	loguru::g_preamble_time = false;
 	// loguru::init(argc, argv);
 
-	ReqRepClient client(cfg.configSockUrl);
+	ReqRepClient client(cfg.configSockUrl, cfg.streamSockUrl);
 
 
 	LOG_S(INFO) << "*** Starting client... ***" ;
@@ -49,11 +49,14 @@ int main(int argc, char *argv[])
 
 	client.getDevices(deviceList);
 
-	LOG_S(INFO) << "Connected devices: " << deviceList;	
+	LOG_S(INFO) << deviceList["devCount"] << " devices detected. Details:" << std::setw(2) << deviceList["devices"];	
 	// ubridge::config cfg;
 	// cfg.maxDevices = 2;
 	// json jsoncfg = cfg;
 	// msgQ->sendMessage(jsoncfg.dump());
+
+
+	client.subscribe("/");
 
     json jsoncfg;
     // jsoncfg["maxDevices"] = 3;

@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <nngpp/nngpp.h>
 #include <nngpp/protocol/req0.h>
+#include <nngpp/protocol/sub0.h>
 #include <cstdio>
 #include <thread>
 
@@ -17,14 +18,17 @@ using json = nlohmann::json;
 
 class ReqRepClient {
 public:
-	ReqRepClient(const char* url) {
+	ReqRepClient(const char* urlConf, const char* urlPubSub) {
 
-		// create a socket for the req protocol
+		// create a socket for the REQ protocol
 		req_sock = nng::req::open();
 
-		rrSockUrl = url;
+		reqSockUrl = urlConf;
 
-		// _jsonCb = cb;
+		// create a socket or the SUB protocol
+		sub_sock = nng::sub::open();
+
+		streamSockUrl = urlPubSub;
 	}
 
 	~ReqRepClient() {
@@ -34,7 +38,11 @@ public:
 	int connect() {
 		try {
 			/* REQ dials and establishes a connection */
-			req_sock.dial(rrSockUrl);	
+			req_sock.dial(reqSockUrl);	
+
+			/* SUB dials and establishes a connection */
+			// sub_sock.dial(reqSockUrl);	
+
 		} catch( const nng::exception& e ) {
 			LOG_S(1) << "nng Exception: " << e.who() << e.what();			
 			return 1;
@@ -80,11 +88,53 @@ public:
 		return -1;
 	}
 
+	int subscribe(const char* topic) {
+
+					/*
+			 // subscribe to everything (empty means all topics)
+        if ((rv = nng_setopt(sock, NNG_OPT_SUB_SUBSCRIBE, "", 0)) != 0) {
+                fatal("nng_setopt", rv);
+        }
+        if ((rv = nng_dial(sock, url, NULL, 0)) != 0) {
+                fatal("nng_dial", rv);
+        }
+        */
+
+		/* Look here for the all subscription: https://github.com/cwzx/nngpp/issues/9 
+		https://github.com/cwzx/nngpp/issues/21
+		*/
+		// subscribe to everything (empty means all topics)
+		sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {});
+
+		// sub_sock.set_opt( NNG_OPT_SUB_SUBSCRIBE, nng::view("",0) );
+		
+		sub_sock.dial(reqSockUrl);	
+
+		// LOG_S(5) << "Listening..";
+		LOG_S(INFO) << "Subscribing to messages on " << streamSockUrl;
+		// sub_socket.set_opt_string
+		while(true){
+			try {
+				LOG_S(5) << "Listening..";
+				auto buf = sub_sock.recv(NNG_FLAG_ALLOC);
+				// auto buf = sub_sock.recv(NNG_FLAG_NONBLOCK);
+				LOG_S(5) << "...";
+				auto messageRaw = buf.data<char>();
+				LOG_S(5) << "received response: " << messageRaw;
+				} catch( const nng::exception& e ) {
+					LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
+					return -1;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		}
+	}
+
 protected:
 	int parseMessage(std::string message, json& jrecv){
+		/* convert to JSON */
 		try{
 			jrecv = json::parse(message);
-			LOG_S(5) << "Rx parsed JSON: " << std::setw(2) << jrecv;
+			LOG_S(6) << "Rx parsed JSON: " << std::setw(2) << jrecv;
 			return 0;
 		} catch (json::exception& e) {
 			LOG_S(WARNING) << "Error parsing JSON: " << e.what();
@@ -93,10 +143,13 @@ protected:
 	}
 
 public: 
-	const char* rrSockUrl;
+	const char* reqSockUrl;
+	const char* streamSockUrl;
 
 private:
 	nng::socket req_sock;
+	nng::socket sub_sock;
+
 	std::function<void(std::string&)> _rawCb;
 	std::function<void(json&)> _jsonCb;
 };

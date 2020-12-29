@@ -64,10 +64,14 @@ int main(int argc, char *argv[])
 
 	// nng::socket rep_socket = nng::rep::open();
 	// rep_socket.listen( "ipc://ubridgeConf" );
+			// LOG_S(INFO) << "-";
+
+	int count = 0;
 	
 	while(true){
-		this_thread::sleep_for(chrono::milliseconds(1000));
+		this_thread::sleep_for(chrono::milliseconds(5000));
 		// LOG_S(INFO) << "-";
+		app.publish(++count);
 	}
 		
 
