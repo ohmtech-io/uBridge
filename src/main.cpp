@@ -16,8 +16,7 @@
 // #include "reqRepServer.h"
 
 #include <nngpp/nngpp.h>
-#include <nngpp/protocol/req0.h>
-#include <nngpp/protocol/rep0.h>
+#include <nngpp/protocol/pub0.h>
 
 #include "ubridge.h"
 
@@ -54,6 +53,17 @@ int main(int argc, char *argv[])
 	// 	}
 	// 	this_thread::sleep_for(chrono::milliseconds(100));
 	// }
+
+    // nng::socket pub_socket = nng::pub::open();
+    // pub_socket.listen("tcp://localhost:8000");
+    // while(1) {
+    //     LOG_S(INFO) << "pub data ";
+    //     pub_socket.send("BATTERY");
+    //     nng::msleep(1000);
+    // }
+
+
+
 	using namespace ubridge;
 
 	Bridge app;

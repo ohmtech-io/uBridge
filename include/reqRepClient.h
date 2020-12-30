@@ -37,11 +37,13 @@ public:
 
 	int connect() {
 		try {
+			LOG_S(INFO) << "Connecting to REQ/REP socket: " << reqSockUrl;
 			/* REQ dials and establishes a connection */
 			req_sock.dial(reqSockUrl);	
 
 			/* SUB dials and establishes a connection */
 			// sub_sock.dial(reqSockUrl);	
+
 
 		} catch( const nng::exception& e ) {
 			LOG_S(1) << "nng Exception: " << e.who() << e.what();			
@@ -56,11 +58,14 @@ public:
 
 			auto messageRaw = buf.data<char>();
 			LOG_S(5) << "received response: " << messageRaw;
+
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 			return -1;
 		}	
 		LOG_S(INFO) << "Server OK";
+
+		LOG_S(INFO) << "Listening on socket: " << streamSockUrl;
 
 		// std::thread _receiveThread(&ReqRepServer::receiveThread, this);
 		// _receiveThread.detach();
@@ -90,47 +95,48 @@ public:
 
 	int subscribe(const char* topic) {
 
-					/*
-			 // subscribe to everything (empty means all topics)
-        if ((rv = nng_setopt(sock, NNG_OPT_SUB_SUBSCRIBE, "", 0)) != 0) {
-                fatal("nng_setopt", rv);
-        }
-        if ((rv = nng_dial(sock, url, NULL, 0)) != 0) {
-                fatal("nng_dial", rv);
-        }
-        */
-
 		/* Look here for the all subscription: https://github.com/cwzx/nngpp/issues/9 
 		https://github.com/cwzx/nngpp/issues/21
 		*/
 		// subscribe to everything (empty means all topics)
-		sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {});
+		// sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {});
 
-		// sub_sock.set_opt( NNG_OPT_SUB_SUBSCRIBE, nng::view("",0) );
+		/* use nullptr to subscribe to all*/
+ 		// sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, "/sensors/1");
+ 		
+
+ 		size_t lengthWithoutNull = strlen(topic)-1;
+ 		char topicChArray[lengthWithoutNull];
+
+ 		for (int i = 0; i < lengthWithoutNull; ++i)
+ 		{
+ 			topicChArray[i] = topic[i];
+ 		}
+
 		
-		sub_sock.dial(reqSockUrl);	
+ 		sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {topicChArray, lengthWithoutNull});
+ 		
+		sub_sock.dial(streamSockUrl);	
 
-		// LOG_S(5) << "Listening..";
-		LOG_S(INFO) << "Subscribing to messages on " << streamSockUrl;
-		// sub_socket.set_opt_string
+		LOG_S(INFO) << "Subscribing to messages on " << topic;
+
 		while(true){
 			try {
-				LOG_S(5) << "Listening..";
-				auto buf = sub_sock.recv(NNG_FLAG_ALLOC);
-				// auto buf = sub_sock.recv(NNG_FLAG_NONBLOCK);
-				LOG_S(5) << "...";
+				
+				nng::buffer buf = sub_sock.recv(NNG_FLAG_ALLOC);
 				auto messageRaw = buf.data<char>();
-				LOG_S(5) << "received response: " << messageRaw;
+
+				LOG_S(5) << "received: " << messageRaw;
+
 				} catch( const nng::exception& e ) {
 					LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 					return -1;
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 	}
 
 protected:
-	int parseMessage(std::string message, json& jrecv){
+	int parseMessage(const std::string& message, json& jrecv) {
 		/* convert to JSON */
 		try{
 			jrecv = json::parse(message);

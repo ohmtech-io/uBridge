@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include <nngpp/nngpp.h>
 #include <nngpp/protocol/pub0.h>
+#include <nngpp/platform/platform.h>
 #include <cstdio>
 #include <thread>
 
@@ -31,7 +32,6 @@ public:
 		try {
 			/* PUB socket starts listening */
 			pub_sock.listen(streamSockUrl);	
-
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 			return -1;
@@ -48,7 +48,7 @@ public:
 	int publish(int& count) {
 	// int publish(json jmessage) {
 		LOG_S(INFO) << "publish " << count;
-		pub_sock.send("/a/b");
+		pub_sock.send("/sensors/3/data");
 		return 0;
 	}
 

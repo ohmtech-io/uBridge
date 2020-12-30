@@ -10,6 +10,7 @@
 
 #include <nngpp/nngpp.h>
 #include <nngpp/protocol/rep0.h>
+#include <nngpp/platform/platform.h>
 
 // #include "MQ.h"
 #include "uBridgeConfig.h"
@@ -56,17 +57,13 @@ int main(int argc, char *argv[])
 	// msgQ->sendMessage(jsoncfg.dump());
 
 
-	client.subscribe("/");
+	client.subscribe("/sensors");
 
     json jsoncfg;
     // jsoncfg["maxDevices"] = 3;
     //or
     jsoncfg = {{"maxDevices", 3}};
     // jsoncfg = {{"maxDevices", 3}, {"devNameBase", "/dev/andaadormir"}};
-
-    /* serialize and send */
-
-
 
 	return 0;
 }
