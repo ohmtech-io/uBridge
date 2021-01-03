@@ -104,6 +104,8 @@ public:
 		/* use nullptr to subscribe to all*/
  		// sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, "/sensors/1");
  		
+ 		std::string rec_topic;
+ 		json rec_json;
 
  		size_t lengthWithoutNull = strlen(topic)-1;
  		char topicChArray[lengthWithoutNull];
@@ -112,7 +114,6 @@ public:
  		{
  			topicChArray[i] = topic[i];
  		}
-
 		
  		sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {topicChArray, lengthWithoutNull});
  		
@@ -124,9 +125,15 @@ public:
 			try {
 				
 				nng::buffer buf = sub_sock.recv(NNG_FLAG_ALLOC);
-				auto messageRaw = buf.data<char>();
+				std::string messageRaw = buf.data<char>();
 
-				LOG_S(5) << "received: " << messageRaw;
+
+				LOG_S(7) << "received: " << messageRaw;
+
+				splitMessage(messageRaw, rec_topic, rec_json);
+
+				LOG_S(5) << "Topic " << rec_topic;
+				LOG_S(5) << "Data " << rec_json;
 
 				} catch( const nng::exception& e ) {
 					LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
@@ -136,6 +143,17 @@ public:
 	}
 
 protected:
+	void splitMessage(const std::string& message, std::string& topic, json& jdata) {
+		/* we use # as token to separate topics from data */
+		std::size_t pos = message.find("#"); 
+
+		topic = message.substr(0, pos); 
+
+		std::string data = message.substr(pos+1); 
+		
+		parseMessage(data, jdata);
+	}
+
 	int parseMessage(const std::string& message, json& jrecv) {
 		/* convert to JSON */
 		try{

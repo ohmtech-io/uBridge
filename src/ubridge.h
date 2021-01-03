@@ -32,7 +32,7 @@ public:
 		uStreamer->start();
 	}
 
-	void publish(int& count) {uStreamer->publish(count);}
+	void publish(std::string& topic, json& jmessage) {uStreamer->publish(topic, jmessage);}
 
 private:
 	void findPorts(std::string &devNameBase, std::vector<std::string> &portList) {

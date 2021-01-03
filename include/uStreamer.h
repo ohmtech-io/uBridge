@@ -45,10 +45,13 @@ public:
 		return 0;
 	};
 
-	int publish(int& count) {
+	int publish(std::string& topic, json& jmessage) {
 	// int publish(json jmessage) {
-		LOG_S(INFO) << "publish " << count;
-		pub_sock.send("/sensors/3/data");
+		LOG_S(5) << "PUB -topic: " <<topic << " msg: " << jmessage;
+		// std::string topic = "/sensors/3/data";
+		auto msg = topic + "#" + jmessage.dump();
+
+		pub_sock.send({msg.c_str(), msg.size()});
 		return 0;
 	}
 
