@@ -23,6 +23,9 @@ using namespace std;
 
 ubridge::config cfg;
 
+void subsMessageHandler(ubridge::message& message) {
+	LOG_S(9) << "cb msg" << message.topic << message.data ;
+}
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +60,7 @@ int main(int argc, char *argv[])
 	// msgQ->sendMessage(jsoncfg.dump());
 
 
-	client.subscribe("/sensors");
+	client.subscribe("/sensors", subsMessageHandler);
 
     json jsoncfg;
     // jsoncfg["maxDevices"] = 3;

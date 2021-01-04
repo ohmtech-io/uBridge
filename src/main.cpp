@@ -81,7 +81,14 @@ int main(int argc, char *argv[])
 	while(true){
 		this_thread::sleep_for(chrono::milliseconds(5000));
 		// LOG_S(INFO) << "-";
-		app.publish(++count);
+		// app.publish(++count);
+		std::string topic = "/sensors/3/data";
+
+		json data;
+		data["name"] = "uThingMNL"; 
+		data["value"] = 13.45; 
+
+		app.publish(topic, data);
 	}
 		
 

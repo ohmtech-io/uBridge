@@ -32,6 +32,7 @@ public:
 		uStreamer->start();
 	}
 
+	//temp, testing
 	void publish(std::string& topic, json& jmessage) {uStreamer->publish(topic, jmessage);}
 
 private:

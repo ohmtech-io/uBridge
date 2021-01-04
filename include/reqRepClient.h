@@ -93,19 +93,21 @@ public:
 		return -1;
 	}
 
-	int subscribe(const char* topic) {
+	int subscribe(const char* topic, std::function<void(ubridge::message&)> cb) {
 
-		/* Look here for the all subscription: https://github.com/cwzx/nngpp/issues/9 
-		https://github.com/cwzx/nngpp/issues/21
+		/* Look here for the all subscription: 
+			https://github.com/cwzx/nngpp/issues/9 
+			https://github.com/cwzx/nngpp/issues/21
 		*/
-		// subscribe to everything (empty means all topics)
-		// sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {});
-
 		/* use nullptr to subscribe to all*/
  		// sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, "/sensors/1");
+
+		// using namespace ubridge;
+
+ 		_jsonCb = cb;
  		
- 		std::string rec_topic;
- 		json rec_json;
+ 		// std::string rec_topic;
+ 		// json rec_json;
 
  		size_t lengthWithoutNull = strlen(topic)-1;
  		char topicChArray[lengthWithoutNull];
@@ -130,10 +132,15 @@ public:
 
 				LOG_S(7) << "received: " << messageRaw;
 
-				splitMessage(messageRaw, rec_topic, rec_json);
+				ubridge::message message;
+				splitMessage(messageRaw, message.topic, message.data);
 
-				LOG_S(5) << "Topic " << rec_topic;
-				LOG_S(5) << "Data " << rec_json;
+				LOG_S(5) << "Topic " << message.topic;
+				LOG_S(5) << "Data " << message.data;
+
+			
+				_jsonCb(message);	
+			
 
 				} catch( const nng::exception& e ) {
 					LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
@@ -143,21 +150,21 @@ public:
 	}
 
 protected:
-	void splitMessage(const std::string& message, std::string& topic, json& jdata) {
+	void splitMessage(const std::string& msg, std::string& topic, json& jdata) {
 		/* we use # as token to separate topics from data */
-		std::size_t pos = message.find("#"); 
+		std::size_t pos = msg.find("#"); 
 
-		topic = message.substr(0, pos); 
+		topic = msg.substr(0, pos); 
 
-		std::string data = message.substr(pos+1); 
+		std::string data = msg.substr(pos+1); 
 		
 		parseMessage(data, jdata);
 	}
 
-	int parseMessage(const std::string& message, json& jrecv) {
+	int parseMessage(const std::string& msg, json& jrecv) {
 		/* convert to JSON */
 		try{
-			jrecv = json::parse(message);
+			jrecv = json::parse(msg);
 			LOG_S(6) << "Rx parsed JSON: " << std::setw(2) << jrecv;
 			return 0;
 		} catch (json::exception& e) {
@@ -174,6 +181,5 @@ private:
 	nng::socket req_sock;
 	nng::socket sub_sock;
 
-	std::function<void(std::string&)> _rawCb;
-	std::function<void(json&)> _jsonCb;
+	std::function<void(ubridge::message&)> _jsonCb;
 };

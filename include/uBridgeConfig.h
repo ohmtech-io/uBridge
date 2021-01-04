@@ -26,4 +26,11 @@ namespace ubridge {
 		ping,
 		unrecognized,
 	};
+
+	struct message {
+		std::string topic;
+		nlohmann::json data;
+	};
+
+
 }
