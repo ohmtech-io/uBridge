@@ -13,9 +13,6 @@ using namespace std;
 // for convenience
 using json = nlohmann::json;
 
-// extern loguru::g_stderr_verbosity;
-
-
 class ReqRepServer {
 public:
 	ReqRepServer(const char* url, function<void(json&)> cb) {
@@ -23,11 +20,7 @@ public:
 		// create a socket for the rep protocol
 		rep_sock = nng::rep::open();
 
-		// rrMqsQ = new MQ(name, MQ::EndpointType::Server);
-		// rrMsgQname = name;
-
 		rrSockUrl = url;
-
 		_jsonCb = cb;
 	}
 
@@ -90,7 +83,7 @@ protected:
 	}
 
 	int parseMessage(string message, json& jrecv){
-		try{
+		try {
 			jrecv = json::parse(message);
 			LOG_S(5) << "Rx parsed JSON: " << std::setw(2) << jrecv;
 			return 0;

@@ -7,12 +7,18 @@ project(Ubridge)
 #   include
 # )
 
+#dependencies:
+#todo:  using libserial 1.0 version, apt manager has 0.6rc3, need to manually compile it
+# may need to run sudo ldconfig after sudo make install
+
+
 find_package(nng)
 
 add_compile_options(-Wall -ggdb -O0)
 # add_compile_options(-Wall -O2)
 
-set(LIBS -lrt -lnng -lpthread -ldl)
+link_directories("/usr/local/dir")
+set(LIBS -lrt -lnng -lpthread -ldl -lserial)
 
 add_executable(ubridge
 	src/main.cpp

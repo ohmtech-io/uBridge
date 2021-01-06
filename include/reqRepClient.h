@@ -127,7 +127,9 @@ public:
 			try {
 				
 				nng::buffer buf = sub_sock.recv(NNG_FLAG_ALLOC);
-				std::string messageRaw = buf.data<char>();
+
+				std::string_view messageRaw = buf.data<char>();
+				// std::string messageRaw = buf.data<char>();
 
 
 				LOG_S(7) << "received: " << messageRaw;
@@ -150,13 +152,13 @@ public:
 	}
 
 protected:
-	void splitMessage(const std::string& msg, std::string& topic, json& jdata) {
+	void splitMessage(std::string_view& msg, std::string& topic, json& jdata) {
 		/* we use # as token to separate topics from data */
 		std::size_t pos = msg.find("#"); 
 
 		topic = msg.substr(0, pos); 
 
-		std::string data = msg.substr(pos+1); 
+		std::string data{msg.substr(pos+1)}; 
 		
 		parseMessage(data, jdata);
 	}

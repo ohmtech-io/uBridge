@@ -12,22 +12,13 @@
 
 #include <nlohmann/json.hpp>
 
-// #include "MQ.h"
-// #include "reqRepServer.h"
-
-#include <nngpp/nngpp.h>
-#include <nngpp/protocol/pub0.h>
-
 #include "ubridge.h"
 
 using namespace std;
 
 
-
-
 int main(int argc, char *argv[])
 {
-
 	loguru::g_preamble_date = false;
 	loguru::g_preamble_time = false;
 
@@ -37,46 +28,24 @@ int main(int argc, char *argv[])
 
 	LOG_S(INFO) << "--- Initializing **u-bridge**... ---";
 
-	// msgQ = new MQ("ubridge", MQ::EndpointType::Server);
-	// msgQ->listen([msgQ, &client1_Subs](string message){
-	// 	LOG_S(INFO) << "Received: " << message;
-		
-	// 	if (message == "/sensor?") {
-	// 		msgQ->sendMessage("Subscription registered!");
-	// 		client1_Subs = true;
-	// 	}
-	// });
-
-	// while(true) {
-	// 	if (client1_Subs){
-	// 		msgQ->sendMessage(sampleMessg);
-	// 	}
-	// 	this_thread::sleep_for(chrono::milliseconds(100));
-	// }
-
-    // nng::socket pub_socket = nng::pub::open();
-    // pub_socket.listen("tcp://localhost:8000");
-    // while(1) {
-    //     LOG_S(INFO) << "pub data ";
-    //     pub_socket.send("BATTERY");
-    //     nng::msleep(1000);
-    // }
-
-
 
 	using namespace ubridge;
 
 	Bridge app;
 	app.start();
 
-	// nng::socket rep_sock = nng::rep::open();
-	// rep_sock.listen("ipc:///ubridge/configSock");
-
-	// nng::socket rep_socket = nng::rep::open();
-	// rep_socket.listen( "ipc://ubridgeConf" );
-			// LOG_S(INFO) << "-";
-
 	int count = 0;
+
+
+	// #include <libserial/SerialPort.h>
+	// try {
+	// 	LibSerial::SerialPort port;
+	// 	port.Open("/dev/ttyACM0");
+	// } catch (const std::exception& ex) {
+	// 		LOG_S(WARNING) << ex.what();
+	// 		return -1;
+	// }
+
 	
 	while(true){
 		this_thread::sleep_for(chrono::milliseconds(5000));
@@ -86,12 +55,9 @@ int main(int argc, char *argv[])
 
 		json data;
 		data["name"] = "uThingMNL"; 
-		data["value"] = 13.45; 
+		data["value"] = ++count; 
 
-		app.publish(topic, data);
+		// app.publish(topic, data);
 	}
-		
-
-	// delete msgQ;
 	return 0;
 }

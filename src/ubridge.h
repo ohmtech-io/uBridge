@@ -7,6 +7,7 @@
 #include "reqRepServer.h"
 #include "uStreamer.h"
 #include "uBridgeConfig.h"
+#include "uDevice.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -23,9 +24,16 @@ public:
 							std::placeholders::_1));
 
 		uStreamer = new Streamer(cfg.streamSockUrl);
+
+		// serial = new ubridge::Serial();
+		// serial = new ubridge::Serial(&portsNameList);
 	}
 
-	~Bridge(){};
+	~Bridge(){
+		delete rrServer;
+		delete uStreamer;
+		// delete serial;
+	};
 
 	void start(void) {
 		rrServer->start();
@@ -33,50 +41,26 @@ public:
 	}
 
 	//temp, testing
-	void publish(std::string& topic, json& jmessage) {uStreamer->publish(topic, jmessage);}
+	void publish(std::string& topic, json& jmessage) {uStreamer->publish(topic, jmessage);}	
 
 private:
-	void findPorts(std::string &devNameBase, std::vector<std::string> &portList) {
-
-		//TODO: mutex here
-		portList.clear();
-
-		std::string path = "/dev";
-
-		const std::regex expr(devNameBase + "\\d");
-
-		/* list files on /dev and filter with the provided name base*/
-		for (const auto & file : std::filesystem::directory_iterator(path)) {
-
-			if (std::regex_match(file.path().string(), expr)) {
-			 	LOG_S(6) << "Port found: " << file.path();
-				portList.push_back(file.path());	 
-			}
-		}
-	}
-
 	int listDevices() {
-		int devCount = 0;
+		size_t devCount = 0;
+		size_t portsCount = 0;
 
-		findPorts(cfg.devNameBase, portList);
+		findPorts(cfg.devNameBase, portsNameList);
 
-		devCount = portList.size();
+		portsCount = portsNameList.size();
 		//WARNING: trying to print an empty vector causes segfault..
 				// LOG_S(6) << "Available ports: " << portList.front();
 
+		LOG_S(INFO) << portsCount << " serial ports detected";
 
-		//TODO:
-		/*
-			- iterate the list, try connecting and query ({"info":true})
-			- populate a json list with the json response
-			- if device does't response, or get error, flag the port name?
-			- mantain a list of connected devices (ports), what do we do it we 
-			get a disconnection (how we notice a disconnection)?
-		*/
-		deviceList["devCount"] = devCount;
+		deviceList["devCount"] = 0;
 
 		//this creates an array stored as std::vector
 		deviceList["devices"] = {};
+
 
 		/*
 		{
@@ -87,6 +71,53 @@ private:
     		}
 		}
 		*/
+		/* iterate over the obtained port list */
+		for (const auto& portName : portsNameList) {
+			LOG_S(5) << "Fetching info from device on " << portName;
+			// serial->open(portName);
+			PortObject tempPort;
+			if (isUthing(portName, tempPort)) {
+				LOG_S(INFO) << "Ohhlala, it seems that we have a uThing here" << portName;
+			}
+		}
+
+
+		// for (size_t i = 0; i < portsCount; ++i)
+		// {
+		// 	portName_t portName = portsNameList[i];
+		// 	LOG_S(5) << "Fetching info from device on " << portsNameList[i];
+		// 	if (0 == serial->open(portName)) {
+		// 		json info;
+
+		// 		/* query the device 'info' */
+		// 		// if (0 == queryInfo(portName, info)) {
+		// 		// 	++devCount;
+
+		// 		// 	json device;
+		// 		// 	device["name"] = info.device; /*"device": "uThing::VOC rev.A"*/
+		// 		// 	device["channelID"] = createChannelID(info);
+		// 		// 	device["serialNumber"] = info.serial;
+
+		// 		// 	deviceList["devices"].push_back(device);
+		// 		// }
+
+		// 		serial->close(portName);
+		// 	}
+		// }
+
+		// LOG_S(INFO) << "Ports size: " << 
+
+		//TODO:
+		/*
+			- iterate the list, try connecting and query ({"info":true})
+			- populate a json list with the json response
+			- if device does't response, or get error, flag the port name?
+			- mantain a list of connected devices (ports), what do we do it we 
+			get a disconnection (how we notice a disconnection)?
+		*/
+
+
+
 		json dev1;
 		dev1["name"] = "uThingMNL"; 
 		dev1["channelID"] = "uThingMNL#694";
@@ -195,11 +226,16 @@ private:
 public:
 	config cfg;	
 	json deviceList;
+	// std::vector<Device> devices;
+
+
 private:
 	ReqRepServer *rrServer;
 	Streamer *uStreamer;
 	requestType_t requestType;
-	std::vector<std::string> portList;
-};
+	PortList portsNameList;
+
+	// ubridge::Serial *serial;
+}; //class Bridge 
 
 } //namespace ubridge
