@@ -24,15 +24,11 @@ public:
 							std::placeholders::_1));
 
 		uStreamer = new Streamer(cfg.streamSockUrl);
-
-		// serial = new ubridge::Serial();
-		// serial = new ubridge::Serial(&portsNameList);
 	}
 
 	~Bridge(){
 		delete rrServer;
 		delete uStreamer;
-		// delete serial;
 	};
 
 	void start(void) {
@@ -52,7 +48,6 @@ private:
 
 		portsCount = portsNameList.size();
 		//WARNING: trying to print an empty vector causes segfault..
-				// LOG_S(6) << "Available ports: " << portList.front();
 
 		LOG_S(INFO) << portsCount << " serial ports detected";
 
@@ -60,8 +55,6 @@ private:
 
 		//this creates an array stored as std::vector
 		deviceList["devices"] = {};
-
-
 		/*
 		{
  	   "info": {
@@ -74,10 +67,16 @@ private:
 		/* iterate over the obtained port list */
 		for (const auto& portName : portsNameList) {
 			LOG_S(5) << "Fetching info from device on " << portName;
-			// serial->open(portName);
+
 			PortObject tempPort;
 			if (isUthing(portName, tempPort)) {
-				LOG_S(INFO) << "Ohhlala, it seems that we have a uThing here" << portName;
+				LOG_S(INFO) << "uThing detected at " << portName;
+				
+				Uthing uthing(portName, std::move(tempPort));
+				++devCount;
+
+				json j_info = uthing.info();
+				
 			}
 		}
 
@@ -105,8 +104,6 @@ private:
 		// 	}
 		// }
 
-		// LOG_S(INFO) << "Ports size: " << 
-
 		//TODO:
 		/*
 			- iterate the list, try connecting and query ({"info":true})
@@ -115,9 +112,6 @@ private:
 			- mantain a list of connected devices (ports), what do we do it we 
 			get a disconnection (how we notice a disconnection)?
 		*/
-
-
-
 		json dev1;
 		dev1["name"] = "uThingMNL"; 
 		dev1["channelID"] = "uThingMNL#694";
@@ -130,8 +124,6 @@ private:
 		dev2["upTime"] = 147373; 
 
 		deviceList["devices"].push_back(dev2);
-
-		// deviceList["devices"][1] = {"uTHingMNL":1};
 
 		LOG_S(5) << "Device list: " << deviceList;
 
@@ -219,7 +211,6 @@ private:
 				LOG_S(WARNING) << "Error parsing command!";
 			}
 		}
-
 		sendResponse(requestType);
 	}
 
@@ -227,15 +218,10 @@ public:
 	config cfg;	
 	json deviceList;
 	// std::vector<Device> devices;
-
-
 private:
 	ReqRepServer *rrServer;
 	Streamer *uStreamer;
 	requestType_t requestType;
 	PortList portsNameList;
-
-	// ubridge::Serial *serial;
 }; //class Bridge 
-
 } //namespace ubridge
