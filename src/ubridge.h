@@ -7,13 +7,15 @@
 #include "reqRepServer.h"
 #include "uStreamer.h"
 #include "uBridgeConfig.h"
+#include "uSerial.h"
 #include "uDevice.h"
+
 
 // for convenience
 using json = nlohmann::json;
 
 namespace ubridge {
-
+	
 class Bridge {
 public:
 	Bridge(void) {
@@ -34,6 +36,7 @@ public:
 	void start(void) {
 		rrServer->start();
 		uStreamer->start();
+		// std::thread monitorPorts(monitorPortsThread(devices, mutex_devices));
 	}
 
 	//temp, testing
@@ -41,17 +44,18 @@ public:
 
 private:
 	int listDevices() {
-		size_t devCount = 0;
+		// size_t devCount = 0;
 		size_t portsCount = 0;
 
-		findPorts(cfg.devNameBase, portsNameList);
+		portsNameList.clear();
+		findPorts("/dev/ttyACM", portsNameList);	
+		findPorts("/dev/ttyUSB", portsNameList);	
+		// findPorts(cfg.devNameBase, portsNameList);
 
 		portsCount = portsNameList.size();
 		//WARNING: trying to print an empty vector causes segfault..
 
 		LOG_S(INFO) << portsCount << " serial ports detected";
-
-		deviceList["devCount"] = 0;
 
 		//this creates an array stored as std::vector
 		deviceList["devices"] = {};
@@ -65,22 +69,35 @@ private:
 		}
 		*/
 		/* iterate over the obtained port list */
-		for (const auto& portName : portsNameList) {
-			LOG_S(5) << "Fetching info from device on " << portName;
+		// for (const auto& portName : portsNameList) {
+		// 	LOG_S(5) << "Fetching info from device on " << portName;
 
-			PortObject tempPort;
-			if (isUthing(portName, tempPort)) {
-				LOG_S(INFO) << "uThing detected at " << portName;
+		// 	/* first check if a device is not already created on this port */
+		// 	if (devices.find(portName) == devices.end()) {				
+		// 		PortObject tempPort;
+		// 		if (isUthing(portName, tempPort)) {
+		// 			LOG_S(INFO) << "uThing detected at " << portName;
 				
-				Uthing uthing(portName, std::move(tempPort));
-				++devCount;
+		// 			Uthing uThing(portName, std::move(tempPort));
+					
+		// 			//key: portName, value: uThing object
+		// 			devices.emplace(portName, std::move(uThing));
+		// 			++devCount;
 
-				json j_info = uthing.info();
-				
-			}
-		}
+		// 			// devices.push_back(std::move(uThing));
+		// 			// devices.emplace({portName, std::move(uThing)})
+		// 			json j_info = uThing.info();
+		// 		}
+		// 	} else {
+		// 		LOG_S(INFO) << "device at " << portName << " already created";
+		// 	}
+		// }
 
 
+// * issues:
+// when we unplug a device, how do we detect it?
+// when we plug it back, Linux can enumerate it witha different port name (ttyACM0 becomes ttyACM2 for instance)
+// we will need to query and uniquely identify them by serial number....
 		// for (size_t i = 0; i < portsCount; ++i)
 		// {
 		// 	portName_t portName = portsNameList[i];
@@ -124,10 +141,12 @@ private:
 		dev2["upTime"] = 147373; 
 
 		deviceList["devices"].push_back(dev2);
+		
+		deviceList["devCount"] = devices.size();
 
 		LOG_S(5) << "Device list: " << deviceList;
 
-		return devCount;
+		return devices.size();
 	}
 
 	void sendResponse(requestType_t& requestType) {
@@ -217,7 +236,11 @@ private:
 public:
 	config cfg;	
 	json deviceList;
-	// std::vector<Device> devices;
+	// std::vector<Uthing> devices;
+	std::map<PortName, Uthing> devices;
+	std::mutex mutex_devices;
+
+
 private:
 	ReqRepServer *rrServer;
 	Streamer *uStreamer;

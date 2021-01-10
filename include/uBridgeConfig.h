@@ -10,7 +10,7 @@ namespace ubridge {
 	        int maxDevices = 10;
 	        const char* configSockUrl= "ipc:///tmp/ubridgeConf";
 	        // const char* configSockUrl= "tcp://localhost:8001";
-	        const char* streamSockUrl= "ipc:///tmp/ubridgeStream.ipc";
+	        const char* streamSockUrl= "ipc:///tmp/ubridgeStream";
 	        // const char* streamSockUrl= "tcp://localhost:8000";
 	};
 	/*https://nlohmann.github.io/json/features/arbitrary_types/
