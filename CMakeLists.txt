@@ -22,6 +22,8 @@ set(LIBS -lrt -lnng -lpthread -ldl -lserial)
 
 add_executable(ubridge
 	src/main.cpp
+	src/uSerial.cpp
+	src/uDevice.cpp
 )
 
 # target_compile_options(ubridge PUBLIC -Wall)

@@ -1,76 +1,46 @@
 #pragma once
 
+#include <chrono>
+#include <nlohmann/json.hpp>
+
 #include "uSerial.h"
 
 namespace ubridge {
+using json = nlohmann::json;
 
-const struct uThingQueries_t {
+using PortName = std::string;
+using PortObject = LibSerial::SerialPort;
+using PortList = std::vector<PortName>;	
+
+
+struct uThingQueries_t {
 	const char* info = "{\"info\": true}\n";
 	const char* status = "{\"status\": true}\n";
 	const json j_info = json::parse(info);
 	const json j_status = json::parse(status);
-} uThingQueries;
-
+};
 
 class Uthing {
 public:	
-	Uthing(const PortName& portName, PortObject portObj): 
-					_portName(portName), 
-					_port(std::move(portObj)) 
-	{
-		json resp = query(uThingQueries.info);
-		if (resp.contains("error")) {
-			 throw std::runtime_error("failed to gather device information"); 
-		} 
-		_devName = resp["info"]["device"];
-		_fwVersion = resp["info"]["firmware"];
-		_serialNumber = resp["info"]["serial"];
-	}
-	// ~Uthing(){};
+	Uthing(const PortName& portName, PortObject portObj);
 
-	auto portName() {return _portName;}
-	auto devName() {return _devName;}
-	auto channelID() {return _channelID;}
-	auto fwVersion() {return _fwVersion;}
-	auto serialNumber() {return _serialNumber;}
+	auto portName();
+	auto devName(); 
+	auto channelID();
+	auto fwVersion();
+	auto serialNumber();
 	// upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
-	auto messagesReceived() {return _messagesReceived;}
-	auto messagesSent() {return _messagesSent;}
+	auto messagesReceived();
+	auto messagesSent();
 	
 
 	/* This is static for a device */
-	json info() {
-		json info;
-		info["info"]["device"] = _devName;
-		info["info"]["serial"] = _serialNumber;
-		info["info"]["firmware"] = _fwVersion;
-		return info;
-	}
+	json info();
 
-	json status() {return query(uThingQueries.status);}
+	json status();
 	
 private:
-	json query(const char* query) {
-		try {	
-			_port.FlushIOBuffers();	
-
-			LOG_S(6) << "Requesting "<< query;		
-			_port.Write(query);
-			
-			std::string response;
-			_port.ReadLine(response, '\n', 1500);
-			LOG_S(9) << "Read " << response;
-
-			json jmesg = json::parse(response);
-			LOG_S(6) << "JSON resp " << jmesg;	
-			return jmesg;
-		} catch (const std::exception& ex) {
-			LOG_S(WARNING) << _portName << _devName << ": " << ex.what();
-			json jerr;
-			jerr["error"] = "Failed to get " + std::string(query); 
-			return jerr;
-		}
-	}
+	json query(const char* query);
 
 private:
 	//Port:

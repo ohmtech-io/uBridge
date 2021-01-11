@@ -15,7 +15,7 @@
 using json = nlohmann::json;
 
 namespace ubridge {
-	
+
 class Bridge {
 public:
 	Bridge(void) {
@@ -36,7 +36,9 @@ public:
 	void start(void) {
 		rrServer->start();
 		uStreamer->start();
-		// std::thread monitorPorts(monitorPortsThread(devices, mutex_devices));
+		LOG_S(INFO) << "Starting monitor thread";
+		std::thread monitorPorts(monitorPortsThread, std::ref(devices), std::ref(mutex_devices));
+		monitorPorts.join();
 	}
 
 	//temp, testing
@@ -48,8 +50,8 @@ private:
 		size_t portsCount = 0;
 
 		portsNameList.clear();
-		findPorts("/dev/ttyACM", portsNameList);	
-		findPorts("/dev/ttyUSB", portsNameList);	
+		findPorts("/dev/ttyACM"s, portsNameList);	
+		findPorts("/dev/ttyUSB"s, portsNameList);	
 		// findPorts(cfg.devNameBase, portsNameList);
 
 		portsCount = portsNameList.size();
@@ -242,6 +244,7 @@ public:
 
 
 private:
+	// USerial uSerial;
 	ReqRepServer *rrServer;
 	Streamer *uStreamer;
 	requestType_t requestType;
