@@ -21,7 +21,7 @@ using json = nlohmann::json;
 
 using namespace std;
 
-ubridge::config cfg;
+ubridge::Config cfg;
 
 void subsMessageHandler(ubridge::message& message) {
 	LOG_S(9) << "cb msg" << message.topic << message.data ;

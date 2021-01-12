@@ -37,7 +37,7 @@ public:
 		rrServer->start();
 		uStreamer->start();
 		LOG_S(INFO) << "Starting monitor thread";
-		std::thread monitorPorts(monitorPortsThread, std::ref(devices), std::ref(mutex_devices));
+		std::thread monitorPorts(monitorPortsThread, std::ref(devices), std::ref(mutex_devices), std::ref(cfg));
 		monitorPorts.join();
 	}
 
@@ -236,7 +236,7 @@ private:
 	}
 
 public:
-	config cfg;	
+	Config cfg;	
 	json deviceList;
 	// std::vector<Uthing> devices;
 	std::map<PortName, Uthing> devices;

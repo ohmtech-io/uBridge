@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #define LOGURU_WITH_STREAMS 1
 #include <loguru/loguru.hpp>
+#include "uBridgeConfig.h"
 #include "uSerial.h"
 
 
@@ -86,16 +87,20 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 	return false;
 }
 
-void monitorPortsThread(Devices& devices, std::mutex& mutex_devices) {
+void monitorPortsThread(Devices& devices, std::mutex& mutex_devices, Config& config) {
 
 	PortList tempPortList;
 	
 	while(true) {
 
 		tempPortList.clear();
-		findPorts("/dev/ttyACM", tempPortList);	
-		findPorts("/dev/ttyUSB", tempPortList);
 
+		if (config.devNameBase.empty()) {
+			findPorts("/dev/ttyACM", tempPortList);	
+			findPorts("/dev/ttyUSB", tempPortList);
+		} else {
+			findPorts(config.devNameBase, tempPortList);
+		}
 		/* iterate over the obtained port list */
 		for (const auto& portName : tempPortList) {
 			LOG_S(9) << "Fetching info from device on " << portName;
