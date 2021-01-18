@@ -7,6 +7,7 @@
 #define LOGURU_WITH_STREAMS 1
 #include <loguru/loguru.hpp>
 #include "uBridgeConfig.h"
+#include "ubridge.h"
 #include "uSerial.h"
 
 
@@ -44,7 +45,8 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 			/*let's give some time to the uTHing device to dump the buffer*/
 			std::this_thread::sleep_for(100ms);
 		} else return false;
-	} catch (const std::exception& ex) {
+	} 
+	catch (const std::exception& ex) {
 		LOG_S(WARNING) << fileDescriptor << ": " << ex.what();
 		return false;
 	}
@@ -74,10 +76,11 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 
 			if (jmesg.contains("info")) {
 				LOG_S(6) << jmesg["info"]["device"];
-				// j_info = jmesg;
+				// info = jmesg;
 				return true;
 			}			
-		} catch (const std::exception& ex) {
+		} 
+		catch (const std::exception& ex) {
 			LOG_S(WARNING) << fileDescriptor << ": " << ex.what();
 		}
 
@@ -87,35 +90,46 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 	return false;
 }
 
-void monitorPortsThread(Devices& devices, std::mutex& mutex_devices, Config& config) {
-
+// void monitorPortsThread(Devices& devices, std::mutex& mutex_devices, Config& config) {
+						// TQueue<json>& inboundQ, TQueue<json>& outboundQ) {
+void monitorPortsThread(Bridge* bridge) {
 	PortList tempPortList;
 	
 	while(true) {
 
 		tempPortList.clear();
 
-		if (config.devNameBase.empty()) {
+		if (bridge->cfg.devNameBase.empty()) {
 			findPorts("/dev/ttyACM", tempPortList);	
 			findPorts("/dev/ttyUSB", tempPortList);
 		} else {
-			findPorts(config.devNameBase, tempPortList);
+			findPorts(bridge->cfg.devNameBase, tempPortList);
 		}
 		/* iterate over the obtained port list */
 		for (const auto& portName : tempPortList) {
-			LOG_S(9) << "Fetching info from device on " << portName;
 
 			/* first check if a device is not already created on this port */
-			if (devices.find(portName) == devices.end()) {				
+			if (bridge->devices.find(portName) == bridge->devices.end()) {				
 				PortObject tempPort;
+				json info;
+
+				LOG_S(5) << "Fetching info from device on " << portName;
 				if (isUthing(portName, tempPort)) {
 					LOG_S(INFO) << "new uThing detected at " << portName;
 				
 					Uthing uThing(portName, std::move(tempPort));
 					
-					std::lock_guard<std::mutex> lck(mutex_devices);				
-					//key: portName, value: uThing object
-					devices.emplace(portName, std::move(uThing));
+					{
+						std::lock_guard<std::mutex> lck(bridge->mutex_devices);				
+						//key: portName, value: uThing object
+						bridge->devices.emplace(portName, std::move(uThing));
+					
+						// LOG_S(INFO) << bridge->devices.find(portName)->second.info();
+						//create a thread from a member function, with the instance stored on the vector
+						std::thread relayThread(&Uthing::relayThread, &bridge->devices.find(portName)->second, std::ref(*bridge));
+						// std::thread relayThread(&Uthing::relayThread, &uThing);
+						relayThread.detach();
+					}
 				}
 			} else {
 				LOG_S(9) << "device at " << portName << " already created";

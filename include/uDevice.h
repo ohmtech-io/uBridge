@@ -3,7 +3,9 @@
 #include <chrono>
 #include <nlohmann/json.hpp>
 
+#include "threadsafeQueue.h"
 #include "uSerial.h"
+
 
 namespace ubridge {
 using json = nlohmann::json;
@@ -12,6 +14,7 @@ using PortName = std::string;
 using PortObject = LibSerial::SerialPort;
 using PortList = std::vector<PortName>;	
 
+class Bridge;
 
 struct uThingQueries_t {
 	const char* info = "{\"info\": true}\n";
@@ -24,6 +27,7 @@ class Uthing {
 public:	
 	Uthing(const PortName& portName, PortObject portObj);
 
+	//getters:
 	auto portName();
 	auto devName(); 
 	auto channelID();
@@ -32,12 +36,11 @@ public:
 	// upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
 	auto messagesReceived();
 	auto messagesSent();
-	
-
-	/* This is static for a device */
-	json info();
-
+	json info(); /* This is static for a device */
 	json status();
+
+	void relayThread(Bridge& bridge);
+	// void relayThread(TQueue<json>& inboundQueue, TQueue<json>& outboundQueue);
 	
 private:
 	json query(const char* query);
@@ -56,7 +59,7 @@ private:
 
 	//some stats:
 	std::chrono::milliseconds _lastUpTime;
-	size_t _messagesReceived = 0;
-	size_t _messagesSent = 0;		
+	int _messagesReceived = 0;
+	int _messagesSent = 0;		
 }; //class 
 } //namespace ubridge
