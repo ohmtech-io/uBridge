@@ -43,11 +43,20 @@ public:
 
 	int publish(std::string& topic, json& jmessage) {
 		
-		LOG_S(5) << "PUB -topic: " <<topic << " msg: " << jmessage;
+		LOG_S(5) << "PUB -topic: " << topic << " msg: " << jmessage;
 		// std::string topic = "/sensors/3/data";
-		auto msg = topic + '#' + jmessage.dump();
+		auto msg = topic + '#' + jmessage.dump() + '\n';
 
 		pub_sock.send({msg.c_str(), msg.size()});
+
+	// 		message.header().clear();
+	// 		message.body().clear();
+	// 		message.header().append({topic.c_str(), topic.size()});
+
+	// 		std::string serializedMsg = jmessage.dump();
+	// 		message.body().append({serializedMsg.c_str(), serializedMsg.size()});
+	// 		pub_sock.send(std::move(message));
+
 		return 0;
 	}
 
@@ -56,4 +65,5 @@ public:
 
 private:
 	nng::socket pub_sock;
+	nng::msg message = nng::make_msg(0);
 };

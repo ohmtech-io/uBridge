@@ -4,6 +4,7 @@
 #include <regex>
 #include <nlohmann/json.hpp>
 
+#include "threadsafeQueue.h"
 #include "reqRepServer.h"
 #include "uStreamer.h"
 #include "uBridgeConfig.h"
@@ -36,9 +37,31 @@ public:
 	void start(void) {
 		rrServer->start();
 		uStreamer->start();
+
+		inboundQ.setMaxSize(100);
+
 		LOG_S(INFO) << "Starting monitor thread";
-		std::thread monitorPorts(monitorPortsThread, std::ref(devices), std::ref(mutex_devices), std::ref(cfg));
-		monitorPorts.join();
+		// std::thread monitorPorts(&monitorPortsThread, std::ref(devices), std::ref(mutex_devices), std::ref(cfg));
+		
+		std::thread monitorPorts(&monitorPortsThread, this);
+		monitorPorts.detach();
+		//DM testing
+		// json newMsg = inboundQ.pop();
+		// LOG_S(INFO) << "newMessageBridge" << newMsg;
+		json inMessage;
+		std::string topic = "/sensors/data";
+
+		while (1) {
+			inMessage = inboundQ.pop();
+			try {
+				LOG_S(8) << "Publishing data: " << inMessage;
+				publish(topic, inMessage);
+			}
+			catch (const json::exception& e) {
+				LOG_S(WARNING) << "Error parsing JSON: " << e.what();
+			}
+			std::this_thread::sleep_for(5ms);
+		}
 	}
 
 	//temp, testing
@@ -49,9 +72,6 @@ private:
 		// size_t devCount = 0;
 		size_t portsCount = 0;
 
-		portsNameList.clear();
-		findPorts("/dev/ttyACM"s, portsNameList);	
-		findPorts("/dev/ttyUSB"s, portsNameList);	
 		// findPorts(cfg.devNameBase, portsNameList);
 
 		portsCount = portsNameList.size();
@@ -242,6 +262,8 @@ public:
 	std::map<PortName, Uthing> devices;
 	std::mutex mutex_devices;
 
+	TQueue<json> inboundQ;
+	TQueue<json> outboundQ;
 
 private:
 	// USerial uSerial;

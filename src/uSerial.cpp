@@ -19,16 +19,11 @@ using namespace std::chrono_literals;
 
 void findPorts(std::string devNameBase, PortList& portList) {
 
-	//TODO: mutex here?
-	// portList.clear();
-
 	std::string path = "/dev";
-
 	const std::regex expr(devNameBase + "\\d");
 
 	/* list files on /dev and filter with the provided name base*/
 	for (const auto& file : std::filesystem::directory_iterator(path)) {
-
 		if (std::regex_match(file.path().string(), expr)) {
 		 	LOG_S(9) << "Port found: " << file.path();
 			portList.push_back(file.path());	 
@@ -50,7 +45,6 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 		LOG_S(WARNING) << fileDescriptor << ": " << ex.what();
 		return false;
 	}
-
 	/* The uThing:: devices are always sending data, so a few things can happen:
 		1- we try to query the device exactly at the same time when the device is sending a data point
 			so we will get a datapoint instead of the request's reply.
@@ -64,7 +58,6 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 		std::this_thread::sleep_for(10ms);
 		LOG_S(9) << "Request {info}";		
 		port.Write("{\"info\": true}\n");
-		// port.Write(uThingQueries.info);
 		
 		try {	
 			std::string response;
@@ -90,8 +83,6 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 	return false;
 }
 
-// void monitorPortsThread(Devices& devices, std::mutex& mutex_devices, Config& config) {
-						// TQueue<json>& inboundQ, TQueue<json>& outboundQ) {
 void monitorPortsThread(Bridge* bridge) {
 	PortList tempPortList;
 	
@@ -120,14 +111,13 @@ void monitorPortsThread(Bridge* bridge) {
 					Uthing uThing(portName, std::move(tempPort));
 					
 					{
-						std::lock_guard<std::mutex> lck(bridge->mutex_devices);				
+						const std::lock_guard<std::mutex> lck(bridge->mutex_devices);				
 						//key: portName, value: uThing object
 						bridge->devices.emplace(portName, std::move(uThing));
 					
 						// LOG_S(INFO) << bridge->devices.find(portName)->second.info();
-						//create a thread from a member function, with the instance stored on the vector
+						//create a thread from a member function, with the instance stored on the map, pass the bridge instance too
 						std::thread relayThread(&Uthing::relayThread, &bridge->devices.find(portName)->second, std::ref(*bridge));
-						// std::thread relayThread(&Uthing::relayThread, &uThing);
 						relayThread.detach();
 					}
 				}
@@ -136,8 +126,7 @@ void monitorPortsThread(Bridge* bridge) {
 			}
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	}
+	}//monitor loop
 }
-
 
 }//namespace ubridge

@@ -8,7 +8,6 @@
 
 namespace ubridge {
 
-
 const uThingQueries_t uThingQueries;
 
 Uthing::Uthing(const PortName& portName, PortObject portObj): 
@@ -33,7 +32,6 @@ auto Uthing::serialNumber() {return _serialNumber;}
 auto Uthing::messagesReceived() {return _messagesReceived;}
 auto Uthing::messagesSent() {return _messagesSent;}
 
-
 /* This is static for a device */
 json Uthing::info() {
 	json info;
@@ -45,7 +43,6 @@ json Uthing::info() {
 
 json Uthing::status() {return query(uThingQueries.status);}
 	
-
 json Uthing::query(const char* query) {
 	try {	
 		_port.FlushIOBuffers();	
@@ -68,50 +65,52 @@ json Uthing::query(const char* query) {
 	}
 }
 
-// void Uthing::relayThread(TQueue<json>& inboundQueue, TQueue<json>& outboundQueue) {
 void Uthing::relayThread(Bridge& bridge) {
-	// std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	
 	LOG_S(INFO) << "Device thread created..." << info();
+	std::string inMessage;
+
 	while(true) {
 		try {
-			std::string inMessage;
 			if (_port.IsDataAvailable()) {
+				inMessage.clear();
 				_port.ReadLine(inMessage, '\n', 10);
-				// LOG_S(INFO) << inMessage;
-			} else {
-				/* for some reason, IsOpen() is always returning true, so in order to detect
-				 	a device being detached we try an I/O operation, which 
-				 	will throw an exception (Input/output error) if the port is not available anymore.
-				 */
-				_port.FlushOutputBuffer();
-			}
-
-			//can be empty if timed-out
-			if (not inMessage.empty()) {
+				LOG_S(9) << inMessage;
+				
 				json jmesg = json::parse(inMessage);
-				LOG_S(9) << "IN messg: " << jmesg;	
-
+				
 				bridge.inboundQ.push(std::move(jmesg));			
+			} else {
+				// For some reason, IsOpen() is always returning true, so in order to detect
+			 	// a device being detached we try an I/O operation, which 
+			 	// will throw an exception (Input/output error) if the port is not available anymore.	 
+				_port.FlushOutputBuffer();
 			}
 		}  
 		catch (const LibSerial::ReadTimeout& ex) {
 			LOG_S(WARNING) << _portName << "->" << _devName << ": " << ex.what();
 		}
 		catch (const std::runtime_error& ex) {
-			//TODO: check which exception we get for the inexistent port (when we remove the device)
-			// and finish the thread here (but first we need to make sure to remove the port from the container)
+			//Likely thrown due to inexistent port (when we remove the device)
 			LOG_S(WARNING) << _portName << "->" << _devName << ": " << ex.what();
-			
+			//So we close the port, delete the device and finish this thread
 			LOG_S(INFO) << "Removing "<< _devName << " on " << _portName;
+			
+			const std::lock_guard<std::mutex> lck(bridge.mutex_devices);	
 			_port.Close();
 			bridge.devices.erase(_portName);
+
 			return;	
 		}
 		catch (const json::exception& ex) {
 			LOG_S(WARNING) << _portName << ": " << ex.what();
 		}
 
+		//100 Hz poll rate (app taking ~1% of CPU on Ubuntu virtual machine)
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+		//TODO: what if we slow down this and allow for potentially faster sensors
+		// to buffer (need to figure out the size of the buffer), and we read and forward in batches
 	}
 }
 

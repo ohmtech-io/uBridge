@@ -19,8 +19,11 @@ public:
     {
         std::lock_guard<std::mutex> mlock(mutex);
 
-        queue.push(std::move(new_item));
-        condition.notify_one();
+        //by now, we just drop new items if the queue is already full
+        if (queue.size() < ++maxNumberOfItems) {
+            queue.push(std::move(new_item));
+            condition.notify_one();
+        }    
     }
 
     /* Blocking */

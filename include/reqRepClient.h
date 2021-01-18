@@ -128,11 +128,10 @@ public:
 				
 				nng::buffer buf = sub_sock.recv(NNG_FLAG_ALLOC);
 
-				std::string_view messageRaw = buf.data<char>();
+				std::string_view messageRaw = {buf.data<char>(), buf.size()};
 				// std::string messageRaw = buf.data<char>();
 
-
-				LOG_S(7) << "received: " << messageRaw;
+				LOG_S(7) << "received: " << buf.size() << " bytes: " << messageRaw ;
 
 				ubridge::message message;
 				splitMessage(messageRaw, message.topic, message.data);
@@ -152,7 +151,7 @@ public:
 	}
 
 protected:
-	void splitMessage(std::string_view& msg, std::string& topic, json& jdata) {
+	void splitMessage(const std::string_view& msg, std::string& topic, json& jdata) {
 		/* we use # as token to separate topics from data */
 		std::size_t pos = msg.find("#"); 
 
