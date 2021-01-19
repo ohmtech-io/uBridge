@@ -29,15 +29,17 @@ public:
 
 	//getters:
 	auto portName();
-	auto devName(); 
-	auto channelID();
+	std::string devName(); 
+	std::string channelID();
 	auto fwVersion();
-	auto serialNumber();
+	std::string serialNumber();
 	// upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
 	auto messagesReceived();
 	auto messagesSent();
 	json info(); /* This is static for a device */
 	json status();
+
+	void setChannelID(const std::string& channelID);
 
 	void relayThread(Bridge& bridge);
 	// void relayThread(TQueue<json>& inboundQueue, TQueue<json>& outboundQueue);

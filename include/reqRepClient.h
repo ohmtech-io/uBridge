@@ -151,18 +151,18 @@ public:
 	}
 
 protected:
-	void splitMessage(const std::string_view& msg, std::string& topic, json& jdata) {
+	void splitMessage( std::string_view msg, std::string& topic, json& jdata) {
 		/* we use # as token to separate topics from data */
 		std::size_t pos = msg.find("#"); 
 
 		topic = msg.substr(0, pos); 
 
-		std::string data{msg.substr(pos+1)}; 
+		std::string_view data{msg.substr(pos+1)}; 
 		
 		parseMessage(data, jdata);
 	}
 
-	int parseMessage(const std::string& msg, json& jrecv) {
+	int parseMessage( std::string_view msg, json& jrecv) {
 		/* convert to JSON */
 		try{
 			jrecv = json::parse(msg);

@@ -1,10 +1,12 @@
 #define LOGURU_WITH_STREAMS 1
 #include <loguru/loguru.hpp>
+#include <nlohmann/json.hpp>
 #include <thread>
-
 #include "uSerial.h"
 #include "ubridge.h"
 #include "uDevice.h"
+
+#include "testTimer.h"
 
 namespace ubridge {
 
@@ -24,10 +26,10 @@ Uthing::Uthing(const PortName& portName, PortObject portObj):
 }
 
 auto Uthing::portName() {return _portName;}
-auto Uthing::devName() {return _devName;}
-auto Uthing::channelID() {return _channelID;}
+std::string Uthing::devName() {return _devName;}
+std::string Uthing::channelID() {return _channelID;}
 auto Uthing::fwVersion() {return _fwVersion;}
-auto Uthing::serialNumber() {return _serialNumber;}
+std::string Uthing::serialNumber() {return _serialNumber;}
 // upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
 auto Uthing::messagesReceived() {return _messagesReceived;}
 auto Uthing::messagesSent() {return _messagesSent;}
@@ -39,6 +41,10 @@ json Uthing::info() {
 	info["info"]["serial"] = _serialNumber;
 	info["info"]["firmware"] = _fwVersion;
 	return info;
+}
+
+void Uthing::setChannelID(const std::string& channelID) {
+	_channelID = channelID;
 }
 
 json Uthing::status() {return query(uThingQueries.status);}
@@ -73,13 +79,22 @@ void Uthing::relayThread(Bridge& bridge) {
 	while(true) {
 		try {
 			if (_port.IsDataAvailable()) {
-				inMessage.clear();
-				_port.ReadLine(inMessage, '\n', 10);
-				LOG_S(9) << inMessage;
-				
-				json jmesg = json::parse(inMessage);
-				
-				bridge.inboundQ.push(std::move(jmesg));			
+				//retrieve the messages in batch (queued on the port FIFO)
+				// in order to reduce the CPU load due to the threading allocation overhead
+				for (auto i = 0; i < 100; ++i)
+				{
+					if (_port.IsDataAvailable()) {
+						_port.ReadLine(inMessage, '\n', 10);
+						
+						LOG_S(9) << inMessage;
+						json jmesg = json::parse(inMessage);
+
+						jmesg["channelID"] = _channelID;				
+						++_messagesReceived;
+						
+						bridge.inboundQ.push(std::move(jmesg));	
+					} else break;
+				}
 			} else {
 				// For some reason, IsOpen() is always returning true, so in order to detect
 			 	// a device being detached we try an I/O operation, which 
@@ -106,11 +121,9 @@ void Uthing::relayThread(Bridge& bridge) {
 			LOG_S(WARNING) << _portName << ": " << ex.what();
 		}
 
-		//100 Hz poll rate (app taking ~1% of CPU on Ubuntu virtual machine)
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-		//TODO: what if we slow down this and allow for potentially faster sensors
-		// to buffer (need to figure out the size of the buffer), and we read and forward in batches
+		//100 Hz poll rate (app taking ~3-4% of CPU on Ubuntu virtual machine)
+		//10 Hz with batched messages below 1%
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }
 

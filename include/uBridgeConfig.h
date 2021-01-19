@@ -11,7 +11,8 @@ namespace ubridge {
 			reason, or the kernel driver assigns anything different than ttyACM* or ttyUSB*)
 			*/
 	        // std::string devNameBase = "/dev/ttyUTHING";
-	        std::string devNameBase = ""; //leaving an empty string looks for /dev/ttyACM* and /dev/ttyUSB*
+	        std::string devNameBase = "/dev/ttyACM";
+	        // std::string devNameBase = ""; //leaving an empty string looks for /dev/ttyACM* and /dev/ttyUSB*
 
 	        int maxDevices = 10;
 	        const char* configSockUrl= "ipc:///tmp/ubridgeConf";

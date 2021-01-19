@@ -14,22 +14,27 @@ project(Ubridge)
 
 find_package(nng)
 
-add_compile_options(-Wall -ggdb -O0)
+# add_compile_options(-Wall -ggdb -O0 -pg)
+# add_compile_options(-Wall  -O0 -pg)
+add_compile_options(-Wall -ggdb3 -O0)
 # add_compile_options(-Wall -O2)
 
 link_directories("/usr/local/dir")
-set(LIBS -lrt -lnng -lpthread -ldl -lserial)
+set(LIBS -lrt -lnng -lpthread -ldl -lserial )
 
 add_executable(ubridge
 	src/main.cpp
 	src/uSerial.cpp
 	src/uDevice.cpp
+	# include/loguru/loguru.cpp
 )
 
 # target_compile_options(ubridge PUBLIC -Wall)
 target_include_directories(ubridge PUBLIC "include")
 # target_link_libraries(ubridge -lrt -lpthread)
 target_link_libraries(ubridge ${LIBS})
+
+# target_link_options(ubridge PRIVATE "-pg")
 
 
 add_executable(consumer
@@ -40,5 +45,10 @@ add_executable(consumer
 target_include_directories(consumer PUBLIC "include")
 target_link_libraries(consumer ${LIBS})
 
+# target_link_options(consumer PRIVATE "-pg")
 
+
+add_executable(test
+	src/test.cpp)
+# target_link_options(test PRIVATE "-pg")
 #  cd build && cmake -GNinja ..

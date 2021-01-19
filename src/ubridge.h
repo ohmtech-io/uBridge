@@ -49,12 +49,17 @@ public:
 		// json newMsg = inboundQ.pop();
 		// LOG_S(INFO) << "newMessageBridge" << newMsg;
 		json inMessage;
-		std::string topic = "/sensors/data";
+		const std::string base_topic = "/sensors/";
 
 		while (1) {
 			inMessage = inboundQ.pop();
 			try {
 				LOG_S(8) << "Publishing data: " << inMessage;
+	
+
+				std::string topic = base_topic + inMessage["channelID"].get<std::string>();
+				inMessage.erase("channelID");
+
 				publish(topic, inMessage);
 			}
 			catch (const json::exception& e) {
