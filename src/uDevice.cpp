@@ -25,10 +25,10 @@ Uthing::Uthing(const PortName& portName, PortObject portObj):
 	_serialNumber = resp["info"]["serial"];
 }
 
-auto Uthing::portName() {return _portName;}
+std::string Uthing::portName() {return _portName;}
 std::string Uthing::devName() {return _devName;}
 std::string Uthing::channelID() {return _channelID;}
-auto Uthing::fwVersion() {return _fwVersion;}
+std::string Uthing::fwVersion() {return _fwVersion;}
 std::string Uthing::serialNumber() {return _serialNumber;}
 // upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
 auto Uthing::messagesReceived() {return _messagesReceived;}

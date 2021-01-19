@@ -28,10 +28,10 @@ public:
 	Uthing(const PortName& portName, PortObject portObj);
 
 	//getters:
-	auto portName();
+	std::string portName();
 	std::string devName(); 
 	std::string channelID();
-	auto fwVersion();
+	std::string fwVersion();
 	std::string serialNumber();
 	// upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
 	auto messagesReceived();

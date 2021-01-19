@@ -68,7 +68,7 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 			LOG_S(9) << "JSON resp " << jmesg;	
 
 			if (jmesg.contains("info")) {
-				LOG_S(6) << jmesg["info"]["device"];
+				LOG_S(9) << jmesg["info"]["device"];
 				// info = jmesg;
 				return true;
 			}			
