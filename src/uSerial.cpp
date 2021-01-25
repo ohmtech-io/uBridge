@@ -83,17 +83,17 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 	return false;
 }
 
-void assignChannelID( Uthing& uthing, Bridge* bridge) {
-	//-----"device": "uThing::VOC rev.A"----
-	 std::string devFullName = uthing.devName();
-	 //remove " rev.X"
-	std::string devName = devFullName.substr(0, devFullName.size() - 6);
-	std::string serial = uthing.serialNumber();
+// void assignChannelID( Uthing& uthing, Bridge* bridge) {
+// 	//-----"device": "uThing::VOC rev.A"----
+// 	 std::string devFullName = uthing.devName();
+// 	 //remove " rev.X"
+// 	std::string devName = devFullName.substr(0, devFullName.size() - 6);
+// 	std::string serial = uthing.serialNumber();
 
-	uthing.setChannelID(devName + '_' + serial.substr(serial.length()-4, serial.length()));
+// 	uthing.setChannelID(devName + '_' + serial.substr(serial.length()-4, serial.length()));
 	
-	LOG_S(6) << "dev name: " << uthing.devName() <<", ChannelID: " << uthing.channelID();
-}
+// 	LOG_S(6) << "dev name: " << uthing.devName() <<", ChannelID: " << uthing.channelID();
+// }
 
 void monitorPortsThread(Bridge* bridge) {
 	PortList tempPortList;
@@ -121,8 +121,7 @@ void monitorPortsThread(Bridge* bridge) {
 					LOG_S(INFO) << "new uThing detected at " << portName;
 				
 					Uthing uThing(portName, std::move(tempPort));
-
-					assignChannelID(uThing, bridge);
+					uThing.assignChannelID();
 					
 					{
 						const std::lock_guard<std::mutex> lck(bridge->mutex_devices);				

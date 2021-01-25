@@ -34,7 +34,7 @@ std::string Uthing::serialNumber() {return _serialNumber;}
 auto Uthing::messagesReceived() {return _messagesReceived;}
 auto Uthing::messagesSent() {return _messagesSent;}
 
-/* This is static for a device */
+/* This is static for a device (obtained during initialization) */
 json Uthing::info() {
 	json info;
 	info["info"]["device"] = _devName;
@@ -43,9 +43,19 @@ json Uthing::info() {
 	return info;
 }
 
-void Uthing::setChannelID(const std::string& channelID) {
-	_channelID = channelID;
+// void Uthing::setChannelID(const std::string& channelID) {
+// 	_channelID = channelID;
+// }
+
+void Uthing::assignChannelID() {
+	//-----"device": "uThing::VOC rev.A"----
+	//remove " rev.X"
+	std::string baseName = _devName.substr(0, _devName.size() - 6);
+	_channelID = _devName + '_' + _serialNumber.substr(_serialNumber.length()-4, _serialNumber.length());
+	
+	LOG_S(6) << "dev name: " << _devName <<", ChannelID: " << _channelID;
 }
+
 
 json Uthing::status() {return query(uThingQueries.status);}
 	

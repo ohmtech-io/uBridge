@@ -39,7 +39,8 @@ public:
 	json info(); /* This is static for a device */
 	json status();
 
-	void setChannelID(const std::string& channelID);
+	// void setChannelID(const std::string& channelID);
+	void assignChannelID();
 
 	void relayThread(Bridge& bridge);
 	// void relayThread(TQueue<json>& inboundQueue, TQueue<json>& outboundQueue);
@@ -53,7 +54,7 @@ private:
 	PortObject _port;
 
 	//Device:
-	std::string _devName;	//multiple devices with the same name possible
+	std::string _devName;	//exampole: "uThing::VOC rev.A", multiple devices with the same name possible
 	std::string _fwVersion;
 	std::string _serialNumber;
 	//used for Pub/Sub
