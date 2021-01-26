@@ -65,7 +65,7 @@ public:
 	int getDevices(json &deviceList) {
 		LOG_S(5) << "Request connected devices.";		
 
-		json req = "{\"command\":\"getDevices\"}"_json;
+		json req = "{\"request\":\"getDevices\"}"_json;
 		
 		if (-1 == request(req, deviceList)) {
 			LOG_S(WARNING) << "Error requesting devices";
@@ -76,9 +76,9 @@ public:
 	int sendCommand(std::string channelID, json& jrequest, json& response) {
 		json req;
 
-		req["command"] = "sendCommand";
+		req["request"] = "sendCommand";
 		req["channelID"] = channelID;
-		req["devCommand"] = jrequest;
+		req["command"] = jrequest;
 
 		LOG_S(5) << "Send Command: "<< req;
 
@@ -95,7 +95,7 @@ public:
 		//i.e.: {"status":{"format":"JSON","reportingPeriod":3,"temperatureOffset:":3.0,"upTime":10389561}}
 		json req;
 
-		req["command"] = "queryDevice";
+		req["request"] = "queryDevice";
 		req["channelID"] = channelID;
 		req["query"] = jrequest;
 

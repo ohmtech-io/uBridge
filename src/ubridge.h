@@ -136,7 +136,7 @@ private:
 				//we have to use the full query since in uThings, all commands reply with at 
 				//least a status response, and if we don't catch this response here they will be read by
 				//the bridge thread and forwarded as data
-				json request = jmessage["devCommand"];
+				json request = jmessage["command"];
 				
 				LOG_S(INFO) << "Sending command " << request << portID; 
 				{	
@@ -214,13 +214,13 @@ private:
 		rrServer->sendResponse(response);
 	}
 
-	int parseCommand(const json& jmessage) {
+	int parseRequest(const json& jmessage) {
 		int ret = -1;
 		
-		if (jmessage["command"] == "setConfig") {
+		if (jmessage["request"] == "setConfig") {
 			/*we can't use the arbitrary_types feature to fill the config here, if one key is missing, or doesn't match, it fails*/
 			if (jmessage.contains("maxDevices")) {
-				//nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"setConfig\",\"maxDevices\":1}";		
+				//nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"request\":\"setConfig\",\"maxDevices\":1}";		
 				requestType = setConfig;	
 				cfg.maxDevices = jmessage["maxDevices"];
 				ret = 0;
@@ -234,23 +234,23 @@ private:
 			json j = cfg;
 			LOG_S(3) << "actual config: " << j;
 		} 
-		if (jmessage["command"] == "getConfig") {
-			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"getConfig\"}";
+		if (jmessage["request"] == "getConfig") {
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"request\":\"getConfig\"}";
 			requestType = getConfig;	
 			ret = 0;
 		}
-		if (jmessage["command"] == "getDevices") {
-			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"getDevices\"}";
+		if (jmessage["request"] == "getDevices") {
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"request\":\"getDevices\"}";
 			requestType = getDevices;	
 			ret = 0;
 		}
-		if (jmessage["command"] == "queryDevice") {
-			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"queryDevice\", \"channelID\":\"uThing::MNL_C4C5\", \"query\":{\"status\":true}}";
+		if (jmessage["request"] == "queryDevice") {
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"request\":\"queryDevice\", \"channelID\":\"uThing::MNL_C4C5\", \"query\":{\"status\":true}}";
 			requestType = queryDevice;	
 			ret = 0;
 		}		
-		if (jmessage["command"] == "sendCommand") {
-			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"sendCommand\", \"channelID\":\"uThing::MNL_C4C5\", \"command\":{\"led\":true}}";
+		if (jmessage["request"] == "sendCommand") {
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"request\":\"sendCommand\", \"channelID\":\"uThing::MNL_C4C5\", \"command\":{\"led\":true}}";
 			requestType = sendCommand;	
 			ret = 0;
 		}	
@@ -265,8 +265,8 @@ private:
 
 		if (jmessage.contains("ping")) {
 			requestType = ping;
-		} else if (jmessage.contains("command")) {
-			if (parseCommand(jmessage) != 0) {
+		} else if (jmessage.contains("request")) {
+			if (parseRequest(jmessage) != 0) {
 				LOG_S(WARNING) << "Error parsing command!";
 			}
 		}
