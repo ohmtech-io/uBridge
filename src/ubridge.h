@@ -131,6 +131,8 @@ private:
 		json jstats;
 
 		int count = 0;
+		int total_sent_messages = 0;
+		int total_recv_messages = 0;
 
 		{
 			const std::lock_guard<std::mutex> lck(mutex_devices);
@@ -141,16 +143,24 @@ private:
 				jstats[channelID]["msgReceived"] = uthing.messagesReceived();
 				uthing.status();
 				jstats[channelID]["upTime"] = uthing.upTime();
+				
+				total_sent_messages += uthing.messagesSent();
+				total_recv_messages += uthing.messagesReceived();
 				++count;
+
 			}
 		}//unlock
 
 		jstats["numConnectedDevices"] = count;
 
 		auto now = std::chrono::steady_clock::now();
-		std::chrono::duration<double> elapsed_seconds = now - appStartTime;
+		std::chrono::duration<double, std::milli> elapsed_milis = now - appStartTime;
 
-		jstats["appUpTime"] = int(elapsed_seconds.count()*1000); //ms
+		// double appUpTime = elapsed_seconds.count()*1000; 
+		jstats["appUpTime"] = int(elapsed_milis.count());
+
+		jstats["sentMsgPerSec"] = round(total_sent_messages / elapsed_milis.count() * 100000) / 100; //round to 2 decimal places
+		jstats["receivedMsgPerSec"] = round(total_recv_messages / elapsed_milis.count() * 100000) / 100;
 
 		return jstats;
 	}
