@@ -73,6 +73,23 @@ public:
 		} else return 0;
 	}
 
+	int sendCommand(std::string channelID, json& jrequest, json& response) {
+		json req;
+
+		req["command"] = "sendCommand";
+		req["channelID"] = channelID;
+		req["devCommand"] = jrequest;
+
+		LOG_S(5) << "Send Command: "<< req;
+
+		if (-1 == request(req, response)) {
+			LOG_S(WARNING) << "Error sending command to device";
+			return -1;
+		}  
+		LOG_S(5) << "Command response: "<< response;
+		return 0;
+	}
+
 	int queryDeviceById(std::string channelID, json& jrequest, json& response) {
 		//NOTE that the uTHing devices always respond with a status message after a command
 		//i.e.: {"status":{"format":"JSON","reportingPeriod":3,"temperatureOffset:":3.0,"upTime":10389561}}

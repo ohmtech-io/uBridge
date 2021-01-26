@@ -29,7 +29,14 @@ void subsMessageHandler(ubridge::message& message) {
 
 int main(int argc, char *argv[])
 {
-	loguru::g_stderr_verbosity = 5;
+	
+	int verb_level = 0;
+
+	if (argc > 1) { 
+		verb_level = atoi(argv[1]);
+	}
+	loguru::g_stderr_verbosity = verb_level;
+	
 	loguru::g_preamble_date = false;
 	loguru::g_preamble_time = false;
 	// loguru::init(argc, argv);
@@ -57,15 +64,24 @@ int main(int argc, char *argv[])
 	// ubridge::config cfg;
 	// cfg.maxDevices = 2;
 	// json jsoncfg = cfg;
-	// msgQ->sendMessage(jsoncfg.dump());
+	
+	json query = "{\"status\":\"1\"}"_json;
+	json command = "{\"led\":true}"_json;
+	// json query = "{\"led\":false}"_json;
+	json resp;
 
+	std::string chID = "uThing::VOC_9142";
+	client.queryDeviceById(chID, query, resp);
 
-	client.subscribe("/sensors", subsMessageHandler);
+	client.sendCommand(chID, command, resp);
+	//start message receiving loop...
+	client.subscribe("/sensors", subsMessageHandler); //subscribe to all sensors
+	// client.subscribe("/sensors/uThing::VOC_9142", subsMessageHandler); //specific one
 
-    json jsoncfg;
+    // json jsoncfg;
     // jsoncfg["maxDevices"] = 3;
     //or
-    jsoncfg = {{"maxDevices", 3}};
+    // jsoncfg = {{"maxDevices", 3}};
     // jsoncfg = {{"maxDevices", 3}, {"devNameBase", "/dev/andaadormir"}};
 
 	return 0;

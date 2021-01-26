@@ -123,6 +123,35 @@ private:
 		return ret;
 	}
 
+
+	json sendCommandById(const json& jmessage) {
+		if (jmessage.contains("channelID")) {
+			PortName portID = findDeviceById(jmessage["channelID"]);
+			if (portID.empty()) 
+			{
+				LOG_S(WARNING) << "In command request - channelID not found:" << jmessage["channelID"];
+				return "{\"status\":\"ERROR\",\"error\":\"channelID not found\"}"_json;	
+			} else 
+			{
+				//we have to use the full query since in uThings, all commands reply with at 
+				//least a status response, and if we don't catch this response here they will be read by
+				//the bridge thread and forwarded as data
+				json request = jmessage["devCommand"];
+				
+				LOG_S(INFO) << "Sending command " << request << portID; 
+				{	
+					const std::lock_guard<std::mutex> lck(mutex_devices);
+					//TODO: shouldn't we use a mutex on the specific instance instead?
+					//i.e. each instance will have their own mutex too
+					devices.at(portID).jquery(request);
+				}
+				return "{\"status\":\"OK\"}"_json;
+			}
+		} else {
+			return "{\"status\":\"ERROR\",\"error\":\"channelID required\"}"_json;
+		}
+	}
+
 	json queryDeviceById(const json& jmessage) {
 		if (jmessage.contains("channelID")) {
 			PortName portID = findDeviceById(jmessage["channelID"]);
@@ -141,8 +170,8 @@ private:
 					//TODO: shouldn't we use a mutex on the specific instance instead?
 					//i.e. each instance will have their own mutex too
 					response = devices.at(portID).jquery(request);
-					LOG_S(INFO) << response;
 				}
+				LOG_S(INFO) << response;
 
 				return response;
 			}
@@ -151,7 +180,7 @@ private:
 		}
 	}
 
-	void sendResponse(requestType_t& requestType, const json& jmessage) {
+	void prepareResponse(requestType_t& requestType, const json& jmessage) {
 		std::string response = "{\"status\":\"unknown error\"}";
 		json jcfg = cfg;
 
@@ -173,6 +202,9 @@ private:
 				break;
 			case queryDevice:
 				response = queryDeviceById(jmessage).dump();
+				break;
+			case sendCommand:
+				response = sendCommandById(jmessage).dump();				
 				break;
 			case unrecognized:
 				response = "{\"status\":\"ERROR\",\"error\":\"command not valid\"}";
@@ -217,7 +249,11 @@ private:
 			requestType = queryDevice;	
 			ret = 0;
 		}		
-
+		if (jmessage["command"] == "sendCommand") {
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"sendCommand\", \"channelID\":\"uThing::MNL_C4C5\", \"command\":{\"led\":true}}";
+			requestType = sendCommand;	
+			ret = 0;
+		}	
 		// todo: add getStatistics command
 		return ret;
 	}
@@ -234,7 +270,7 @@ private:
 				LOG_S(WARNING) << "Error parsing command!";
 			}
 		}
-		sendResponse(requestType, jmessage);
+		prepareResponse(requestType, jmessage);
 	}
 
 public:
