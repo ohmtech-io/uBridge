@@ -49,7 +49,6 @@ public:
 	void sendResponse(const std::string rawMsg) {		
 		
 		try {
-
 			auto msg = nng::make_msg(0);
 
 			//TODO: this is hacky, find the proper way to pass the string by reference on the msg constructor

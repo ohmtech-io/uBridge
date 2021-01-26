@@ -78,18 +78,20 @@ private:
 		//this creates an array stored as std::vector
 		deviceList["devices"] = {};
 
-		const std::lock_guard<std::mutex> lck(mutex_devices);				
+		{
+			const std::lock_guard<std::mutex> lck(mutex_devices);				
 
-		for (auto& [port, uthing] : devices) {
-			json jdevice;
-			jdevice["name"] = uthing.devName();
-			jdevice["channelID"] = uthing.channelID();
-			jdevice["serialNumber"] = uthing.serialNumber();
-			jdevice["fwVersion"] = uthing.fwVersion();
+			for (auto& [port, uthing] : devices) {
+				json jdevice;
+				jdevice["name"] = uthing.devName();
+				jdevice["channelID"] = uthing.channelID();
+				jdevice["serialNumber"] = uthing.serialNumber();
+				jdevice["fwVersion"] = uthing.fwVersion();
 
-			deviceList["devices"].push_back(jdevice);
-		}
-		
+				deviceList["devices"].push_back(jdevice);
+			}
+		}	//unlock	
+
 		deviceList["devCount"] = devices.size();
 		
 		if (devices.size() == 0) {
@@ -123,6 +125,27 @@ private:
 		return ret;
 	}
 
+	json getStats() {
+		json jstats;
+
+		int count = 0;
+
+		{
+			const std::lock_guard<std::mutex> lck(mutex_devices);
+
+			for (auto& [port, uthing] : devices) {
+				const std::string channelID = uthing.channelID();
+				jstats[channelID]["msgSent"] = uthing.messagesSent();
+				jstats[channelID]["msgReceived"] = uthing.messagesReceived();
+				uthing.status();
+				jstats[channelID]["upTime"] = uthing.upTime();
+				++count;
+			}
+		}//unlock
+
+		jstats["numConnectedDevices"] = count;
+		return jstats;
+	}
 
 	json sendCommandById(const json& jmessage) {
 		if (jmessage.contains("channelID")) {
@@ -184,6 +207,8 @@ private:
 		std::string response = "{\"status\":\"unknown error\"}";
 		json jcfg = cfg;
 
+		LOG_S(9) << "request type ID" << requestType;
+
 		switch(requestType) {
 			case ping:
 				response = "{\"pong\":1}";
@@ -193,8 +218,8 @@ private:
 				response = jcfg.dump();
 				break;
 			case setConfig:
-				LOG_S(WARNING) << "TODO: implement this";
-				response = "{\"status\":\"OK\"}";
+				LOG_S(WARNING) << "TODO: implement this!!!";
+				response = "{\"status\":\"ERROR\",\"error\":\"feature not implemented\"}";
 				break;
 			case getDevices:
 				listDevices();
@@ -205,6 +230,9 @@ private:
 				break;
 			case sendCommand:
 				response = sendCommandById(jmessage).dump();				
+				break;
+			case getStatistics:
+				response = getStats().dump();				
 				break;
 			case unrecognized:
 				response = "{\"status\":\"ERROR\",\"error\":\"command not valid\"}";
@@ -254,7 +282,12 @@ private:
 			requestType = sendCommand;	
 			ret = 0;
 		}	
-		// todo: add getStatistics command
+		if (jmessage["request"] == "getStatistics") { 
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"request\":\"getStatistics\"}";
+			requestType = getStatistics;	
+			ret = 0;
+		}	
+		// todo: do this nicely man
 		return ret;
 	}
 

@@ -73,6 +73,17 @@ public:
 		} else return 0;
 	}
 
+	int getStatistics(json &response) {
+		LOG_S(5) << "Request Statistics";		
+
+		json req = "{\"request\":\"getStatistics\"}"_json;
+		
+		if (-1 == request(req, response)) {
+			LOG_S(WARNING) << "Error requesting Statistics";
+			return -1;
+		} else return 0;
+	}
+
 	int sendCommand(std::string channelID, json& jrequest, json& response) {
 		json req;
 
@@ -189,7 +200,6 @@ protected:
 			std::string_view messageRaw = {buf.data<char>(), buf.size()};
 			
 			LOG_S(8) << "received response: " << messageRaw << " lenght: " << messageRaw.size();
-			
 
 			if (0 == parseMessage(messageRaw, response)){
 				return 0;

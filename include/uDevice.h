@@ -33,9 +33,9 @@ public:
 	std::string channelID();
 	std::string fwVersion();
 	std::string serialNumber();
-	// upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
-	auto messagesReceived();
-	auto messagesSent();
+	int upTime(); //{return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
+	int messagesReceived();
+	int messagesSent();
 	json info(); /* This is static for a device */
 	json status();
 
@@ -61,7 +61,9 @@ private:
 	std::string _channelID; //unique
 
 	//some stats:
-	std::chrono::milliseconds _lastUpTime;
+	// std::chrono::milliseconds _lastUpTime;
+	int _lastUpTime = 0;
+
 	int _messagesReceived = 0;
 	int _messagesSent = 0;		
 }; //class 

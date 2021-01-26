@@ -31,6 +31,7 @@ namespace ubridge {
 		getDevices,
 		queryDevice,
 		sendCommand,
+		getStatistics,
 		ping,
 		unrecognized,
 	};

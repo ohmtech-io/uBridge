@@ -74,6 +74,10 @@ int main(int argc, char *argv[])
 	client.queryDeviceById(chID, query, resp);
 
 	client.sendCommand(chID, command, resp);
+
+	client.getStatistics(resp);
+	LOG_S(INFO) << "Statistics:" << std::setw(2) << resp;	
+	
 	//start message receiving loop...
 	client.subscribe("/sensors", subsMessageHandler); //subscribe to all sensors
 	// client.subscribe("/sensors/uThing::VOC_9142", subsMessageHandler); //specific one

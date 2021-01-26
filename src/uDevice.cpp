@@ -25,14 +25,15 @@ Uthing::Uthing(const PortName& portName, PortObject portObj):
 	_serialNumber = resp["info"]["serial"];
 }
 
+//getters:
 std::string Uthing::portName() {return _portName;}
 std::string Uthing::devName() {return _devName;}
 std::string Uthing::channelID() {return _channelID;}
 std::string Uthing::fwVersion() {return _fwVersion;}
 std::string Uthing::serialNumber() {return _serialNumber;}
-// upTime() {return lastUpTime + ******}; https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
-auto Uthing::messagesReceived() {return _messagesReceived;}
-auto Uthing::messagesSent() {return _messagesSent;}
+int Uthing::upTime() {return _lastUpTime;}// https://github.com/AnthonyCalandra/modern-cpp-features#stdchrono
+int Uthing::messagesReceived() {return _messagesReceived;}
+int Uthing::messagesSent() {return _messagesSent;}
 
 /* This is static for a device (obtained during initialization) */
 json Uthing::info() {
@@ -43,10 +44,6 @@ json Uthing::info() {
 	return info;
 }
 
-// void Uthing::setChannelID(const std::string& channelID) {
-// 	_channelID = channelID;
-// }
-
 void Uthing::assignChannelID() {
 	//-----"device": "uThing::VOC rev.A"----
 	//remove " rev.X"
@@ -56,8 +53,9 @@ void Uthing::assignChannelID() {
 	LOG_S(6) << "dev name: " << _devName <<", ChannelID: " << _channelID;
 }
 
-
-json Uthing::status() {return query(uThingQueries.status);}
+json Uthing::status() {
+	return query(uThingQueries.status); 
+}
 	
 json Uthing::jquery(const json& jquery) {
 	LOG_S(9) << "jquery: " << jquery;
@@ -70,13 +68,21 @@ json Uthing::query(const char* raw_query) {
 
 		LOG_S(6) << "Requesting "<< raw_query;		
 		_port.Write(raw_query);
-		
+		++_messagesSent;
+
 		std::string response;
 		_port.ReadLine(response, '\n', 1500);
 		LOG_S(9) << "Read " << response;
+		++_messagesReceived;
 
 		json jmesg = json::parse(response);
 		LOG_S(6) << "JSON resp " << jmesg;	
+
+		if (jmesg["status"].contains("upTime")) {
+			int value = jmesg["status"]["upTime"];
+			_lastUpTime = value;
+		}
+
 		return jmesg;
 	} catch (const std::exception& ex) {
 		LOG_S(WARNING) << _portName << _devName << ": " << ex.what();
