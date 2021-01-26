@@ -35,6 +35,8 @@ public:
 	};
 
 	void start(void) {
+		appStartTime = std::chrono::steady_clock::now();
+
 		rrServer->start();
 		uStreamer->start();
 
@@ -45,12 +47,11 @@ public:
 		
 		std::thread monitorPorts(&monitorPortsThread, this);
 		monitorPorts.detach();
-		//DM testing
-		// json newMsg = inboundQ.pop();
-		// LOG_S(INFO) << "newMessageBridge" << newMsg;
+
 		json inMessage;
 		const std::string base_topic = "/sensors/";
 
+		//Main Bridge loop:
 		while (1) {
 			inMessage = inboundQ.pop();
 			try {
@@ -69,10 +70,11 @@ public:
 		}
 	}
 
-	//temp, testing
-	void publish(std::string& topic, json& jmessage) {uStreamer->publish(topic, jmessage);}	
-
 private:
+	void publish(std::string& topic, json& jmessage) {
+		uStreamer->publish(topic, jmessage);
+	}	
+
 	int listDevices() {
 
 		//this creates an array stored as std::vector
@@ -144,6 +146,12 @@ private:
 		}//unlock
 
 		jstats["numConnectedDevices"] = count;
+
+		auto now = std::chrono::steady_clock::now();
+		std::chrono::duration<double> elapsed_seconds = now - appStartTime;
+
+		jstats["appUpTime"] = int(elapsed_seconds.count()*1000); //ms
+
 		return jstats;
 	}
 
@@ -322,5 +330,7 @@ private:
 	Streamer *uStreamer;
 	requestType_t requestType;
 	PortList portsNameList;
+
+	std::chrono::time_point<std::chrono::steady_clock> appStartTime; 
 }; //class Bridge 
 } //namespace ubridge
