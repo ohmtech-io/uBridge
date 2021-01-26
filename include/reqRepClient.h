@@ -43,8 +43,6 @@ public:
 
 			/* SUB dials and establishes a connection */
 			// sub_sock.dial(reqSockUrl);	
-
-
 		} catch( const nng::exception& e ) {
 			LOG_S(1) << "nng Exception: " << e.who() << e.what();			
 			return 1;
@@ -55,7 +53,6 @@ public:
 			req_sock.send("{\"ping\":0}");
 			
 			auto buf = req_sock.recv();
-
 			auto messageRaw = buf.data<char>();
 			LOG_S(5) << "received response: " << messageRaw;
 
@@ -64,34 +61,57 @@ public:
 			return -1;
 		}	
 		LOG_S(INFO) << "Server OK";
-
-		LOG_S(INFO) << "Listening on socket: " << streamSockUrl;
-
-		// std::thread _receiveThread(&ReqRepServer::receiveThread, this);
-		// _receiveThread.detach();
-		
+		LOG_S(INFO) << "Listening on socket: " << streamSockUrl;		
 		return 0;
 	}
 
 	int getDevices(json &deviceList) {
-		try {
-			LOG_S(5) << "Request connected devices.";		
-			req_sock.send("{\"command\":\"getDevices\"}");
-			
-			auto buf = req_sock.recv();
+		LOG_S(5) << "Request connected devices.";		
 
-			auto messageRaw = buf.data<char>();
-			LOG_S(5) << "received response: " << messageRaw;
-
-			if (0 == parseMessage(messageRaw, deviceList)){
-				return 0;
-			}
-		} catch( const nng::exception& e ) {
-			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
+		json req = "{\"command\":\"getDevices\"}"_json;
+		
+		if (-1 == request(req, deviceList)) {
+			LOG_S(WARNING) << "Error requesting devices";
 			return -1;
-		}
-		return -1;
+		} else return 0;
 	}
+
+	int queryDeviceById(std::string channelID, json& jrequest, json& response) {
+		json req;
+
+		req["command"] = "queryDevice";
+		req["channelID"] = channelID;
+		req["query"] = jrequest;
+
+		LOG_S(5) << "Req.Query: "<< req;
+
+		if (-1 == request(req, response)) {
+			LOG_S(WARNING) << "Error querying device";
+			return -1;
+		}  
+		LOG_S(5) << "Query response: "<< response;
+		return 0;	
+	}
+
+	// int getDevices(json &deviceList) {
+	// 	try {
+	// 		LOG_S(5) << "Request connected devices.";		
+	// 		req_sock.send("{\"command\":\"getDevices\"}");
+			
+	// 		auto buf = req_sock.recv();
+
+	// 		auto messageRaw = buf.data<char>();
+	// 		LOG_S(5) << "received response: " << messageRaw;
+
+	// 		if (0 == parseMessage(messageRaw, deviceList)){
+	// 			return 0;
+	// 		}
+	// 	} catch( const nng::exception& e ) {
+	// 		LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
+	// 		return -1;
+	// 	}
+	// 	return -1;
+	// }
 
 	int subscribe(const char* topic, std::function<void(ubridge::message&)> cb) {
 
@@ -101,14 +121,8 @@ public:
 		*/
 		/* use nullptr to subscribe to all*/
  		// sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, "/sensors/1");
-
-		// using namespace ubridge;
-
  		_jsonCb = cb;
- 		
- 		// std::string rec_topic;
- 		// json rec_json;
-
+ 	
  		size_t lengthWithoutNull = strlen(topic)-1;
  		char topicChArray[lengthWithoutNull];
 
@@ -138,11 +152,8 @@ public:
 
 				LOG_S(5) << "Topic " << message.topic;
 				LOG_S(5) << "Data " << message.data;
-
 			
 				_jsonCb(message);	
-			
-
 				} catch( const nng::exception& e ) {
 					LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 					return -1;
@@ -151,6 +162,31 @@ public:
 	}
 
 protected:
+	int request(json& jrequest, json& response) {
+		LOG_S(8) << "Sending request: " << jrequest;		
+		try {
+			auto msg = jrequest.dump();
+			req_sock.send({msg.c_str(), msg.size()});
+			//blocking...
+			auto buf = req_sock.recv();
+
+			auto messageRaw = buf.data<char>();
+			LOG_S(8) << "received response: " << messageRaw;
+
+			if (0 == parseMessage(messageRaw, response)){
+				return 0;
+			}
+		} catch( const nng::exception& e ) {
+			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
+		}
+		return -1;
+	}
+
+	int request(const char* raw_request, json& response) {
+		json req = json::parse(raw_request);
+		return request(req, response);
+	}
+
 	void splitMessage( std::string_view msg, std::string& topic, json& jdata) {
 		/* we use # as token to separate topics from data */
 		std::size_t pos = msg.find("#"); 

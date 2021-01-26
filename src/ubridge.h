@@ -22,7 +22,7 @@ public:
 	Bridge(void) {
 		/* Calling with object non-static member function requires to bind the implicit "this" pointer.*/
 		rrServer = new ReqRepServer(cfg.configSockUrl, 
-							std::bind(&Bridge::cfgHandler, 
+							std::bind(&Bridge::requestHandler, 
 							this, 
 							std::placeholders::_1));
 
@@ -102,12 +102,53 @@ private:
     		}
 		}
 		*/
-
 		return devices.size();
 	}
 
-	void sendResponse(requestType_t& requestType) {
-		std::string response;
+	PortName findDeviceById(std::string channelID) {
+		PortName ret = ""s;
+		for (auto& [port, uthing] : devices) {
+			if (uthing.channelID() == channelID) {
+				ret = port;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	json queryDeviceById(const json& jmessage) {
+		if (jmessage.contains("channelID")) {
+			PortName portID = findDeviceById(jmessage["channelID"]);
+			if (portID.empty()) 
+			{
+				LOG_S(WARNING) << "In query request - channelID not found:" << jmessage["channelID"];
+				return "{\"status\":\"ERROR\",\"error\":\"channelID not found\"}"_json;	
+			} else 
+			{
+				json response;
+				json request = jmessage["query"];
+				
+				LOG_S(INFO) << "Querying device " << request << portID; 
+				{	
+					// const std::lock_guard<std::mutex> lck(mutex_devices);
+					//TODO: shouldn't we use a mutex on the specific instance instead?
+					//i.e. each instance will have their own mutex too
+					// LOG_S(INFO) << devices.at(portID).serialNumber();
+					// LOG_S(INFO) << devices.at(portID).info();
+					response = devices.at(portID).jquery(request);
+					LOG_S(INFO) << response;
+					// response = "{\"status\":\"1234\"}"_json;
+				}
+
+				return response;
+			}
+		} else {
+			return "{\"status\":\"ERROR\",\"error\":\"channelID required\"}"_json;
+		}
+	}
+
+	void sendResponse(requestType_t& requestType, const json& jmessage) {
+		std::string response = "{\"status\":\"unknown error\"}";
 		json jcfg = cfg;
 
 		switch(requestType) {
@@ -115,7 +156,7 @@ private:
 				response = "{\"pong\":1}";
 				break;
 			case getConfig:
-				/* send the actual configuration converted to JSON*/
+				/* send the actual Bridge configuration converted to JSON*/
 				response = jcfg.dump();
 				break;
 			case setConfig:
@@ -127,7 +168,7 @@ private:
 				response = deviceList.dump();
 				break;
 			case queryDevice:
-				LOG_S(WARNING) << "TODO: implement this";
+				response = queryDeviceById(jmessage).dump();
 				break;
 			case unrecognized:
 				response = "{\"status\":\"ERROR\",\"error\":\"command not valid\"}";
@@ -143,7 +184,7 @@ private:
 		if (jmessage["command"] == "setConfig") {
 			/*we can't use the arbitrary_types feature to fill the config here, if one key is missing, or doesn't match, it fails*/
 			if (jmessage.contains("maxDevices")) {
-				//nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"command\":\"setConfig\",\"maxDevices\":1}";		
+				//nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"setConfig\",\"maxDevices\":1}";		
 				requestType = setConfig;	
 				cfg.maxDevices = jmessage["maxDevices"];
 				ret = 0;
@@ -158,25 +199,25 @@ private:
 			LOG_S(3) << "actual config: " << j;
 		} 
 		if (jmessage["command"] == "getConfig") {
-			// nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"command\":\"getConfig\"}";
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"getConfig\"}";
 			requestType = getConfig;	
 			ret = 0;
 		}
 		if (jmessage["command"] == "getDevices") {
-			// nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"command\":\"getDevices\"}";
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"getDevices\"}";
 			requestType = getDevices;	
 			ret = 0;
 		}
 		if (jmessage["command"] == "queryDevice") {
-			// nngcat --req --dial ipc:///tmp/ubridgeConf --data "{\"command\":\"queryDevice\", \"status\":true}";
+			// nngcat --req --dial ipc:///tmp/ubridgeReqResp --data "{\"command\":\"queryDevice\", \"channelID\":\"uThing::MNL_C4C5\", \"query\":{\"status\":true}}";
 			requestType = queryDevice;	
 			ret = 0;
 		}		
 		return ret;
 	}
 
-	void cfgHandler(json& jmessage)	{
-		LOG_S(6) << "confHandler> JSON message: " << jmessage;
+	void requestHandler(json& jmessage)	{
+		LOG_S(6) << "Request_Handler> JSON message: " << jmessage;
 
 		requestType = unrecognized;
 
@@ -187,7 +228,7 @@ private:
 				LOG_S(WARNING) << "Error parsing command!";
 			}
 		}
-		sendResponse(requestType);
+		sendResponse(requestType, jmessage);
 	}
 
 public:

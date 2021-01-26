@@ -51,7 +51,7 @@ void Uthing::assignChannelID() {
 	//-----"device": "uThing::VOC rev.A"----
 	//remove " rev.X"
 	std::string baseName = _devName.substr(0, _devName.size() - 6);
-	_channelID = _devName + '_' + _serialNumber.substr(_serialNumber.length()-4, _serialNumber.length());
+	_channelID = baseName + '_' + _serialNumber.substr(_serialNumber.length()-4, _serialNumber.length());
 	
 	LOG_S(6) << "dev name: " << _devName <<", ChannelID: " << _channelID;
 }
@@ -59,12 +59,17 @@ void Uthing::assignChannelID() {
 
 json Uthing::status() {return query(uThingQueries.status);}
 	
-json Uthing::query(const char* query) {
+json Uthing::jquery(const json& jquery) {
+	LOG_S(9) << "jquery: " << jquery;
+	return query(jquery.dump().c_str());
+}	
+
+json Uthing::query(const char* raw_query) {
 	try {	
 		_port.FlushIOBuffers();	
 
-		LOG_S(6) << "Requesting "<< query;		
-		_port.Write(query);
+		LOG_S(6) << "Requesting "<< raw_query;		
+		_port.Write(raw_query);
 		
 		std::string response;
 		_port.ReadLine(response, '\n', 1500);
@@ -76,7 +81,7 @@ json Uthing::query(const char* query) {
 	} catch (const std::exception& ex) {
 		LOG_S(WARNING) << _portName << _devName << ": " << ex.what();
 		json jerr;
-		jerr["error"] = "Failed to get " + std::string(query); 
+		jerr["error"] = "Failed to get " + std::string(raw_query); 
 		return jerr;
 	}
 }
@@ -106,8 +111,8 @@ void Uthing::relayThread(Bridge& bridge) {
 					} else break;
 				}
 			} else {
-				// For some reason, IsOpen() is always returning true, so in order to detect
-			 	// a device being detached we try an I/O operation, which 
+				// For some reason, IsOpen() is always returning true (even if the device was removed), 
+			 	// so in order to detect a device being detached we try an I/O operation, which 
 			 	// will throw an exception (Input/output error) if the port is not available anymore.	 
 				_port.FlushOutputBuffer();
 			}

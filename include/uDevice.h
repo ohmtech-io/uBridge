@@ -45,8 +45,8 @@ public:
 	void relayThread(Bridge& bridge);
 	// void relayThread(TQueue<json>& inboundQueue, TQueue<json>& outboundQueue);
 	
-private:
-	json query(const char* query);
+	json query(const char* raw_query);
+	json jquery(const json& query);
 
 private:
 	//Port:

@@ -46,7 +46,7 @@ public:
 		// LOG_S(5) << "PUB -topic: " << topic << " msg: " << jmessage;
 		auto msg = topic + '#' + jmessage.dump();
 
-		LOG_S(5) << "PUB : " << msg;
+		LOG_S(7) << "PUB : " << msg;
 		pub_sock.send({msg.c_str(), msg.size()});
 
 	// 		message.header().clear();
