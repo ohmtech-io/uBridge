@@ -91,6 +91,13 @@ private:
 		}
 		
 		deviceList["devCount"] = devices.size();
+		
+		if (devices.size() == 0) {
+			//create an empty array to get consistency so the client doesn't need to
+			//check for a null value
+			deviceList["devices"] = json::array();	
+		}
+
 		LOG_S(5) << "Device list: " << deviceList;
 
 		/*
@@ -130,14 +137,11 @@ private:
 				
 				LOG_S(INFO) << "Querying device " << request << portID; 
 				{	
-					// const std::lock_guard<std::mutex> lck(mutex_devices);
+					const std::lock_guard<std::mutex> lck(mutex_devices);
 					//TODO: shouldn't we use a mutex on the specific instance instead?
 					//i.e. each instance will have their own mutex too
-					// LOG_S(INFO) << devices.at(portID).serialNumber();
-					// LOG_S(INFO) << devices.at(portID).info();
 					response = devices.at(portID).jquery(request);
 					LOG_S(INFO) << response;
-					// response = "{\"status\":\"1234\"}"_json;
 				}
 
 				return response;
@@ -213,6 +217,8 @@ private:
 			requestType = queryDevice;	
 			ret = 0;
 		}		
+
+		// todo: add getStatistics command
 		return ret;
 	}
 

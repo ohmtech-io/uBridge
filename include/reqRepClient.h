@@ -10,11 +10,8 @@
 #include <cstdio>
 #include <thread>
 
-
-// using namespace std;
 // for convenience
 using json = nlohmann::json;
-
 
 class ReqRepClient {
 public:
@@ -77,6 +74,8 @@ public:
 	}
 
 	int queryDeviceById(std::string channelID, json& jrequest, json& response) {
+		//NOTE that the uTHing devices always respond with a status message after a command
+		//i.e.: {"status":{"format":"JSON","reportingPeriod":3,"temperatureOffset:":3.0,"upTime":10389561}}
 		json req;
 
 		req["command"] = "queryDevice";
@@ -168,10 +167,12 @@ protected:
 			auto msg = jrequest.dump();
 			req_sock.send({msg.c_str(), msg.size()});
 			//blocking...
-			auto buf = req_sock.recv();
-
-			auto messageRaw = buf.data<char>();
-			LOG_S(8) << "received response: " << messageRaw;
+			
+			nng::buffer buf = req_sock.recv();
+			std::string_view messageRaw = {buf.data<char>(), buf.size()};
+			
+			LOG_S(8) << "received response: " << messageRaw << " lenght: " << messageRaw.size();
+			
 
 			if (0 == parseMessage(messageRaw, response)){
 				return 0;

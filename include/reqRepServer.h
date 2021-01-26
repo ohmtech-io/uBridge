@@ -49,13 +49,13 @@ public:
 	void sendResponse(const std::string rawMsg) {		
 		
 		try {
-			LOG_S(INFO) << "Send response: " << rawMsg;
 
 			auto msg = nng::make_msg(0);
 
 			//TODO: this is hacky, find the proper way to pass the string by reference on the msg constructor
 			msg.body().append({rawMsg.c_str(), rawMsg.length()});
 
+			LOG_S(INFO) << "Send response: " << rawMsg << " lenght: " << msg.body().size();
 			rep_sock.send( std::move(msg) );
 
 		} catch( const nng::exception& e ) {
