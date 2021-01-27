@@ -139,10 +139,10 @@ private:
 
 			for (auto& [port, uthing] : devices) {
 				const std::string channelID = uthing.channelID();
-				jstats[channelID]["msgSent"] = uthing.messagesSent();
-				jstats[channelID]["msgReceived"] = uthing.messagesReceived();
+				jstats["devices"][channelID]["msgSent"] = uthing.messagesSent();
+				jstats["devices"][channelID]["msgReceived"] = uthing.messagesReceived();
 				uthing.status();
-				jstats[channelID]["upTime"] = uthing.upTime();
+				jstats["devices"][channelID]["upTime"] = uthing.upTime();
 				
 				total_sent_messages += uthing.messagesSent();
 				total_recv_messages += uthing.messagesReceived();
@@ -157,7 +157,7 @@ private:
 		std::chrono::duration<double, std::milli> elapsed_milis = now - appStartTime;
 
 		// double appUpTime = elapsed_seconds.count()*1000; 
-		jstats["appUpTime"] = int(elapsed_milis.count());
+		jstats["bridgeUpTime"] = int(elapsed_milis.count());
 
 		jstats["sentMsgPerSec"] = round(total_sent_messages / elapsed_milis.count() * 100000) / 100; //round to 2 decimal places
 		jstats["receivedMsgPerSec"] = round(total_recv_messages / elapsed_milis.count() * 100000) / 100;

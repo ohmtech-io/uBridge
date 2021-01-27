@@ -94,6 +94,8 @@ json Uthing::query(const char* raw_query) {
 
 void Uthing::relayThread(Bridge& bridge) {
 	
+	loguru::set_thread_name(_channelID.c_str());
+	
 	LOG_S(INFO) << "Device thread created..." << info();
 	std::string inMessage;
 

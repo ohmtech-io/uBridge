@@ -97,6 +97,8 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 
 void monitorPortsThread(Bridge* bridge) {
 	PortList tempPortList;
+
+	loguru::set_thread_name("monitorPorts_th");
 	
 	while(true) {
 
