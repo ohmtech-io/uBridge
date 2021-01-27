@@ -65,10 +65,9 @@ int main(int argc, char *argv[])
 	// Only log INFO, WARNING, ERROR and FATAL
 	loguru::add_file("/tmp/ubridge.log", loguru::Truncate, loguru::Verbosity_INFO);
 
-	json jconfig; //create unitiialized json object
+	json jconfig;
 
 	try {
-
 		LOG_S(INFO) << "Opening " << config_file;
 		// read in the json file
 		std::ifstream file(config_file, std::ifstream::in);
@@ -77,22 +76,14 @@ int main(int argc, char *argv[])
 			LOG_S(ERROR) << "Error, couldn't open configuration file " << config_file;
 			exit(1);
 		}
+		// parse using "ignore_comments=true" so we can use comments on the config file
+    	jconfig = json::parse(file, nullptr, true, true); 
 
-   		file >> jconfig; // initialize json object with what was read from file
-
-    	std::cout << jconfig << std::endl; // prints json object to screen
-
-    	// uses at to access fields from json object
-    	// std::cout << jconfig.at("testField") << std::endl;
 	} catch (const std::runtime_error& ex) {
 		LOG_S(WARNING) << "Error parsing options: " << ex.what();
+	} catch (const nlohmann::detail::parse_error& ex) {
+		LOG_S(WARNING) << "Error parsing json: " << ex.what();
 	}
-
-
-	LOG_S(INFO) << "--- Initializing ** u-bridge **... ---";
-
-	// using namespace ubridge;
-
 
 	ubridge::Config config;
 
@@ -108,6 +99,13 @@ int main(int argc, char *argv[])
 	if (jconfig.contains("streamSockUrl")) {
 		config.streamSockUrl = jconfig.at("streamSockUrl");
 	}
+
+	if (jconfig.contains("maxDevices")) {
+		config.maxDevices = jconfig.at("maxDevices");
+	}
+
+	LOG_S(1) << "Loaded configuration: " << jconfig;
+	LOG_S(INFO) << "--- Initializing ** u-bridge **... ---";
 
 	ubridge::Bridge app(config);
 
