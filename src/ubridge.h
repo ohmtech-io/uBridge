@@ -22,17 +22,15 @@ public:
 	Bridge(Config config): cfg(config) 
 	{
 		/* Calling with object non-static member function requires to bind the implicit "this" pointer.*/
-		rrServer = new ReqRepServer(cfg.configSockUrl, 
-							std::bind(&Bridge::requestHandler, 
-							this, 
-							std::placeholders::_1));
+		rrServer = std::make_unique<ReqRepServer>(cfg.configSockUrl, 
+												std::bind(&Bridge::requestHandler, 
+												this, 
+												std::placeholders::_1));
 
-		uStreamer = new Streamer(cfg.streamSockUrl);
+		uStreamer = std::make_unique<Streamer>(cfg.streamSockUrl);
 	}
 
 	~Bridge(){
-		delete rrServer;
-		delete uStreamer;
 	};
 
 	void start(void) {
@@ -328,7 +326,6 @@ private:
 public:
 	Config cfg;	
 	json deviceList;
-	// std::vector<Uthing> devices;
 	std::map<PortName, Uthing> devices;
 	std::mutex mutex_devices;
 
@@ -336,9 +333,8 @@ public:
 	TQueue<json> outboundQ;
 
 private:
-	// USerial uSerial;
-	ReqRepServer *rrServer;
-	Streamer *uStreamer;
+	std::unique_ptr<ReqRepServer> rrServer;
+	std::unique_ptr<Streamer> uStreamer;
 	requestType_t requestType;
 	PortList portsNameList;
 
