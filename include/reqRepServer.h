@@ -15,7 +15,7 @@ using json = nlohmann::json;
 
 class ReqRepServer {
 public:
-	ReqRepServer(const char* url, function<void(json&)> cb) {
+	ReqRepServer(std::string& url, function<void(json&)> cb) {
 
 		// create a socket for the rep protocol
 		rep_sock = nng::rep::open();
@@ -31,7 +31,7 @@ public:
 	int start() {
 		try {
 			/* REP socket starts listening */
-			rep_sock.listen(rrSockUrl);	
+			rep_sock.listen(rrSockUrl.c_str());	
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 			// printf( "%s: %s\n", e.who(), e.what() );
@@ -94,7 +94,8 @@ protected:
 
 public: 
 	// string rrMsgQname;
-	const char* rrSockUrl;
+	// const char* rrSockUrl;
+	std::string rrSockUrl;
 
 private:
 	// MQ *rrMqsQ;

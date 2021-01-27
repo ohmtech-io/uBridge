@@ -17,7 +17,7 @@ using json = nlohmann::json;
 
 class Streamer {
 public:
-	Streamer(const char* url) {
+	Streamer(std::string& url) {
 
 		// create a socket for the PUB protocol
 		pub_sock = nng::pub::open();
@@ -31,7 +31,7 @@ public:
 	int start() {
 		try {
 			/* PUB socket starts listening */
-			pub_sock.listen(streamSockUrl);	
+			pub_sock.listen(streamSockUrl.c_str());	
 		} catch( const nng::exception& e ) {
 			LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
 			return -1;
@@ -60,7 +60,7 @@ public:
 	}
 
 public: 
-	const char* streamSockUrl;
+	std::string streamSockUrl;
 
 private:
 	nng::socket pub_sock;

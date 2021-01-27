@@ -100,6 +100,12 @@ void monitorPortsThread(Bridge* bridge) {
 
 	loguru::set_thread_name("monitorPorts_th");
 	
+	if (bridge->cfg.devNameBase.empty()) {
+		LOG_S(INFO) << "Searching for devices on /dev/ttyACM* and /dev/ttyUSB*";
+	} else {
+		LOG_S(INFO) << "Searching for devices on " << bridge->cfg.devNameBase;
+	}
+
 	while(true) {
 
 		tempPortList.clear();

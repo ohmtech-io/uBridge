@@ -15,9 +15,10 @@ namespace ubridge {
 	        // std::string devNameBase = ""; //leaving an empty string looks for /dev/ttyACM* and /dev/ttyUSB*
 
 	        int maxDevices = 10;
-	        const char* configSockUrl= "ipc:///tmp/ubridgeReqResp";
+	        // const char* configSockUrl= "ipc:///tmp/ubridgeReqResp";
+	        std::string configSockUrl= "ipc:///tmp/ubridgeReqResp";
 	        // const char* configSockUrl= "tcp://localhost:8001";
-	        const char* streamSockUrl= "ipc:///tmp/ubridgeStream";
+	        std::string streamSockUrl= "ipc:///tmp/ubridgeStream";
 	        // const char* streamSockUrl= "tcp://localhost:8000";
 	};
 	/*https://nlohmann.github.io/json/features/arbitrary_types/

@@ -19,7 +19,8 @@ namespace ubridge {
 
 class Bridge {
 public:
-	Bridge(void) {
+	Bridge(Config config): cfg(config) 
+	{
 		/* Calling with object non-static member function requires to bind the implicit "this" pointer.*/
 		rrServer = new ReqRepServer(cfg.configSockUrl, 
 							std::bind(&Bridge::requestHandler, 

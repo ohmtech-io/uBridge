@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	loguru::g_preamble_time = false;
 	// loguru::init(argc, argv);
 
-	ReqRepClient client(cfg.configSockUrl, cfg.streamSockUrl);
+	ReqRepClient client(cfg.configSockUrl, cfg.streamSockUrl.c_str());
 
 
 	LOG_S(INFO) << "*** Starting client... ***" ;
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 	// cfg.maxDevices = 2;
 	// json jsoncfg = cfg;
 	
-	json query = "{\"status\":\"1\"}"_json;
+	json query = "{\"status\":true}"_json;
 	json command = "{\"led\":true}"_json;
 	// json query = "{\"led\":false}"_json;
 	json resp;
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
 	client.getStatistics(resp);
 	LOG_S(INFO) << "Statistics:" << std::setw(2) << resp;	
-	
+
 	//start message receiving loop...
 	client.subscribe("/sensors", subsMessageHandler); //subscribe to all sensors
 	// client.subscribe("/sensors/uThing::VOC_9142", subsMessageHandler); //specific one

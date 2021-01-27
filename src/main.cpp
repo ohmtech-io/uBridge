@@ -62,8 +62,10 @@ int main(int argc, char *argv[])
 
 	loguru::init(argc, argv);
 
-	// Only log INFO, WARNING, ERROR and FATAL to "latest_readable.log":
+	// Only log INFO, WARNING, ERROR and FATAL
 	loguru::add_file("/tmp/ubridge.log", loguru::Truncate, loguru::Verbosity_INFO);
+
+	json jconfig; //create unitiialized json object
 
 	try {
 
@@ -75,14 +77,13 @@ int main(int argc, char *argv[])
 			LOG_S(ERROR) << "Error, couldn't open configuration file " << config_file;
 			exit(1);
 		}
-		json jconfig; //create unitiialized json object
 
    		file >> jconfig; // initialize json object with what was read from file
 
     	std::cout << jconfig << std::endl; // prints json object to screen
 
     	// uses at to access fields from json object
-    	std::cout << jconfig.at("testField") << std::endl;
+    	// std::cout << jconfig.at("testField") << std::endl;
 	} catch (const std::runtime_error& ex) {
 		LOG_S(WARNING) << "Error parsing options: " << ex.what();
 	}
@@ -90,9 +91,26 @@ int main(int argc, char *argv[])
 
 	LOG_S(INFO) << "--- Initializing ** u-bridge **... ---";
 
-	using namespace ubridge;
+	// using namespace ubridge;
 
-	Bridge app;
+
+	ubridge::Config config;
+
+	//override defaults on uBridgeConfig.h if they are present on the json file
+	if (jconfig.contains("devNameBase")) {
+		config.devNameBase = jconfig.at("devNameBase");
+	}
+
+	if (jconfig.contains("configSockUrl")) {
+		config.configSockUrl = jconfig.at("configSockUrl");
+	}
+
+	if (jconfig.contains("streamSockUrl")) {
+		config.streamSockUrl = jconfig.at("streamSockUrl");
+	}
+
+	ubridge::Bridge app(config);
+
 	app.start();
 
 	// int count = 0;

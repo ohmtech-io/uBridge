@@ -15,7 +15,7 @@ using json = nlohmann::json;
 
 class ReqRepClient {
 public:
-	ReqRepClient(const char* urlConf, const char* urlPubSub) {
+	ReqRepClient(std::string& urlConf, const char* urlPubSub) {
 
 		// create a socket for the REQ protocol
 		req_sock = nng::req::open();
@@ -36,7 +36,7 @@ public:
 		try {
 			LOG_S(INFO) << "Connecting to REQ/REP socket: " << reqSockUrl;
 			/* REQ dials and establishes a connection */
-			req_sock.dial(reqSockUrl);	
+			req_sock.dial(reqSockUrl.c_str());	
 
 			/* SUB dials and establishes a connection */
 			// sub_sock.dial(reqSockUrl);	
@@ -160,7 +160,7 @@ public:
 		
  		sub_sock.set_opt(NNG_OPT_SUB_SUBSCRIBE, {topicChArray, lengthWithoutNull});
  		
-		sub_sock.dial(streamSockUrl);	
+		sub_sock.dial(streamSockUrl.c_str());	
 
 		LOG_S(INFO) << "Subscribing to messages on " << topic;
 
@@ -239,8 +239,10 @@ protected:
 	}
 
 public: 
-	const char* reqSockUrl;
-	const char* streamSockUrl;
+	// const char* reqSockUrl;
+	// const char* streamSockUrl;
+	std::string reqSockUrl;
+	std::string streamSockUrl;
 
 private:
 	nng::socket req_sock;
