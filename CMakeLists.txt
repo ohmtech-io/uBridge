@@ -11,12 +11,12 @@ project(Ubridge)
 #todo:  using libserial 1.0 version, apt manager has 0.6rc3, need to manually compile it
 # may need to run sudo ldconfig after sudo make install
 
-
 find_package(nng)
 
 # add_compile_options(-Wall -ggdb -O0 -pg)
 # add_compile_options(-Wall  -O0 -pg)
-add_compile_options(-Wall -ggdb3 -O0)
+# add_compile_options(-Wall -ggdb3 -O0) #debug
+add_compile_options(-Wall -O3) #release
 # add_compile_options(-Wall -O2)
 
 link_directories("/usr/local/dir")
@@ -26,6 +26,7 @@ add_executable(ubridge
 	src/main.cpp
 	src/uSerial.cpp
 	src/uDevice.cpp
+	src/uStreamer.cpp
 	# include/loguru/loguru.cpp
 )
 
@@ -45,10 +46,4 @@ add_executable(consumer
 target_include_directories(consumer PUBLIC "include")
 target_link_libraries(consumer ${LIBS})
 
-# target_link_options(consumer PRIVATE "-pg")
-
-
-add_executable(test
-	src/test.cpp)
-# target_link_options(test PRIVATE "-pg")
 #  cd build && cmake -GNinja ..
