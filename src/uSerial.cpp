@@ -4,15 +4,11 @@
 #include <chrono>
 #include <libserial/SerialPort.h>
 #include <nlohmann/json.hpp>
-#define LOGURU_WITH_STREAMS 1
-#include <loguru/loguru.hpp>
-#include "uBridgeConfig.h"
+
 #include "ubridge.h"
 #include "uSerial.h"
 
-
 namespace ubridge {
-
 // for convenience
 using json = nlohmann::json;
 using namespace std::chrono_literals;

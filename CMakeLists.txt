@@ -3,21 +3,15 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(Ubridge)
 
-# include_directories(
-#   include
-# )
-
 #dependencies:
 #todo:  using libserial 1.0 version, apt manager has 0.6rc3, need to manually compile it
 # may need to run sudo ldconfig after sudo make install
 
 find_package(nng)
 
-# add_compile_options(-Wall -ggdb -O0 -pg)
-# add_compile_options(-Wall  -O0 -pg)
 # add_compile_options(-Wall -ggdb3 -O0) #debug
-add_compile_options(-Wall -O3) #release
-# add_compile_options(-Wall -O2)
+# add_compile_options(-Wall -O3) #release
+add_compile_options(-Wall -O2)
 
 link_directories("/usr/local/dir")
 set(LIBS -lrt -lnng -lpthread -ldl -lserial )
@@ -27,6 +21,7 @@ add_executable(ubridge
 	src/uSerial.cpp
 	src/uDevice.cpp
 	src/uStreamer.cpp
+	src/reqRepServer.cpp
 	# include/loguru/loguru.cpp
 )
 

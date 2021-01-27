@@ -1,18 +1,3 @@
-#include <iostream>
-#include <chrono>
-#include <iomanip>
-
-#define LOGURU_WITH_STREAMS 1
-#include <loguru/loguru.hpp>
-#include <loguru/loguru.cpp>
-
-#include <nlohmann/json.hpp>
-
-#include <nngpp/nngpp.h>
-#include <nngpp/protocol/rep0.h>
-#include <nngpp/platform/platform.h>
-
-// #include "MQ.h"
 #include "uBridgeConfig.h"
 #include "reqRepClient.h"
 

@@ -1,10 +1,7 @@
 #pragma once
 
-#include <mutex>
 #include <libserial/SerialPort.h>
-#include "uBridgeConfig.h"
 #include "uDevice.h"
-// #include "../src/ubridge.h"
 
 namespace ubridge {
 

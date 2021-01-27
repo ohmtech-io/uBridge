@@ -2,7 +2,11 @@
 
 #include <filesystem>
 #include <regex>
+#include <iostream>
 #include <nlohmann/json.hpp>
+
+#define LOGURU_WITH_STREAMS 1
+#include <loguru/loguru.hpp>
 
 #include "threadsafeQueue.h"
 #include "reqRepServer.h"
@@ -14,6 +18,9 @@
 
 // for convenience
 using json = nlohmann::json;
+
+using namespace std::chrono_literals;
+using namespace std::string_literals;
 
 namespace ubridge {
 

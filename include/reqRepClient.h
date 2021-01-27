@@ -1,14 +1,21 @@
 #pragma once
 
+#include <iostream>
+#include <chrono>
+#include <iomanip>
 #include <functional>
+#include <cstdio>
+#include <thread>
+
 #define LOGURU_WITH_STREAMS 1
 #include <loguru/loguru.hpp>
+#include <loguru/loguru.cpp>
 #include <nlohmann/json.hpp>
 #include <nngpp/nngpp.h>
 #include <nngpp/protocol/req0.h>
 #include <nngpp/protocol/sub0.h>
-#include <cstdio>
-#include <thread>
+#include <nngpp/platform/platform.h>
+
 
 // for convenience
 using json = nlohmann::json;
