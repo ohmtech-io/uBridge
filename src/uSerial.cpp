@@ -2,8 +2,11 @@
 #include <filesystem>
 #include <thread>
 #include <chrono>
+
 #include <libserial/SerialPort.h>
 #include <nlohmann/json.hpp>
+#define LOGURU_WITH_STREAMS 1
+#include <loguru/loguru.hpp>
 
 #include "ubridge.h"
 #include "uSerial.h"

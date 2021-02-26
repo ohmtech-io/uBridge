@@ -22,6 +22,7 @@ add_executable(ubridge
 	src/uDevice.cpp
 	src/uStreamer.cpp
 	src/reqRepServer.cpp
+	src/ubridge.cpp
 	# include/loguru/loguru.cpp
 )
 

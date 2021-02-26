@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
 	// Only log INFO, WARNING, ERROR and FATAL
 	loguru::add_file("/tmp/ubridge.log", loguru::Truncate, loguru::Verbosity_INFO);
 
+
+	// for convenience
+	using json = nlohmann::json;
+
 	json jconfig;
 
 	try {
