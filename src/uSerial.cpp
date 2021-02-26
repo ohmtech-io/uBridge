@@ -94,7 +94,7 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 void monitorPortsThread(Bridge* bridge) {
 	PortList tempPortList;
 
-	loguru::set_thread_name("monitorPorts_th");
+	loguru::set_thread_name("monitorPorts");
 	
 	if (bridge->cfg.devNameBase.empty()) {
 		LOG_S(INFO) << "Searching for devices on /dev/ttyACM* and /dev/ttyUSB*";

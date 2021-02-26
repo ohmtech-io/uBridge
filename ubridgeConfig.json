@@ -1,7 +1,7 @@
 /* --uBridge configuration file--. NOTE: The format is JSON-like, with the optional comment blocks*/
 {
 	"devNameBase":"",/* If this field is left empty, the bridge will try to find devices
-					in /dev/ttyACM* and /dev/ttyUSB* */
+					in '/dev/ttyACM*' and '/dev/ttyUSB*' - For MacOS, use '/dev/cu'*/
 	"configSockUrl":"ipc:///tmp/ubridgeReqResp",/* The sockets for the Request Response Server and data Streamer*/
 	"streamSockUrl":"ipc:///tmp/ubridgeStream",/* If the client app runs in the same machine, IPC is 
 					more efficient. If a different host is used (as with a client running in a Docker instance)

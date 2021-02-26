@@ -30,9 +30,9 @@ public:
 	{
 		/* Calling with object non-static member function requires to bind the implicit "this" pointer.*/
 		rrServer = std::make_unique<ReqRepServer>(cfg.configSockUrl, 
-												std::bind(&Bridge::requestHandler, 
-												this, 
-												std::placeholders::_1));
+						std::bind(&Bridge::requestHandler, 
+						this, 
+						std::placeholders::_1));
 
 		uStreamer = std::make_unique<Streamer>(cfg.streamSockUrl);
 	}

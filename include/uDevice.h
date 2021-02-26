@@ -6,7 +6,6 @@
 #include "threadsafeQueue.h"
 #include "uSerial.h"
 
-
 namespace ubridge {
 using json = nlohmann::json;
 

@@ -10,14 +10,10 @@
 #define LOGURU_WITH_STREAMS 1
 #include <loguru/loguru.hpp>
 #include <loguru/loguru.cpp>
-
 #include <nlohmann/json.hpp>
-
 #include <cxxopts.hpp>
 
 #include "ubridge.h"
-
-using namespace std;
 
 
 int main(int argc, char *argv[])
@@ -25,8 +21,7 @@ int main(int argc, char *argv[])
 	cxxopts::Options options("ubridge", "Manages connected uThing devices and acts as a broker for the sensor data and configuration");
 
     options.add_options()
-        // ("c,config", "JSON configuration file name", cxxopts::value<std::string>()->default_value("ubridgeConfig.json"))
-    ("c,config", "JSON configuration file name", cxxopts::value<std::string>())
+   		("c,config", "JSON configuration file name", cxxopts::value<std::string>()->default_value("ubridgeConfig.json"))
         ("v,verbose", "Verbosity output level (0-9)", cxxopts::value<int>()->default_value("0"))
         ("h,help", "Print usage")
     ;
@@ -57,11 +52,7 @@ int main(int argc, char *argv[])
 	loguru::g_preamble_date = false;
 	loguru::g_preamble_time = false;
 
-	//TODO: get verbosity from argv...
-	// loguru::g_stderr_verbosity = 6;
-
 	loguru::init(argc, argv);
-
 	// Only log INFO, WARNING, ERROR and FATAL
 	loguru::add_file("/tmp/ubridge.log", loguru::Truncate, loguru::Verbosity_INFO);
 

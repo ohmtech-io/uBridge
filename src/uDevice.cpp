@@ -95,7 +95,7 @@ json Uthing::query(const char* raw_query) {
 void Uthing::relayThread(Bridge& bridge) {
 	
 	loguru::set_thread_name(_channelID.c_str());
-	
+
 	LOG_S(INFO) << "Device thread created..." << info();
 	std::string inMessage;
 
@@ -145,7 +145,7 @@ void Uthing::relayThread(Bridge& bridge) {
 		}
 
 		//100 Hz poll rate (app taking ~3-4% of CPU on Ubuntu virtual machine)
-		//10 Hz with batched messages below 1%
+		//10 Hz with batched messages, well below 1%
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
 }

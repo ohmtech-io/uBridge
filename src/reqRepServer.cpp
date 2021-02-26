@@ -43,7 +43,8 @@ int ReqRepServer::start() {
 }
 
 void ReqRepServer::sendResponse(const std::string rawMsg) {		
-	
+	loguru::set_thread_name("ReqRepServer");
+
 	try {
 		auto msg = nng::make_msg(0);
 
