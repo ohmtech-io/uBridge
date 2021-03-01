@@ -19,7 +19,7 @@
 * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.     
+* SOFTWARE.
 ****************************************************************************/
 
 #include <iostream>
@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
     	}
     }
     catch (const cxxopts::OptionException& e) {
-    	std::cout << "error parsing options: " << e.what() << std::endl;
-    	exit(1);
-  	}
+		std::cout << "error parsing options: " << e.what() << std::endl;
+		exit(1);
+	}
 
 	loguru::g_preamble_date = false;
 	loguru::g_preamble_time = false;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 			exit(1);
 		}
 		// parse using "ignore_comments=true" so we can use comments on the config file
-    	jconfig = json::parse(file, nullptr, true, true); 
+		jconfig = json::parse(file, nullptr, true, true); 
 
 	} catch (const std::runtime_error& ex) {
 		LOG_S(WARNING) << "Error parsing options: " << ex.what();
@@ -128,23 +128,8 @@ int main(int argc, char *argv[])
 
 	ubridge::Bridge app(config);
 
+	//Start the bridge application
 	app.start();
 
-	// int count = 0;
-	
-	// while(true){
-	// 	this_thread::sleep_for(chrono::milliseconds(10000));
-	// 	// LOG_S(INFO) << "-";
-	// 	// app.publish(++count);
-	// 	std::string topic = "/sensors/3/data";
-
-	// 	json data;
-	// 	data["name"] = "uThingMNL"; 
-	// 	data["value"] = ++count; 
-
-	// 	// app.publish(topic, data);
-	// 	// delete app;
-	// 	// return(0);
-	// }
 	return 0;
 }

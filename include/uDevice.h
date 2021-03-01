@@ -77,7 +77,7 @@ private:
 	PortObject _port;
 
 	//Device:
-	std::string _devName;	//exampole: "uThing::VOC rev.A", multiple devices with the same name possible
+	std::string _devName;	//example: "uThing::VOC rev.A", multiple devices with the same name possible
 	std::string _fwVersion;
 	std::string _serialNumber;
 	//used for Pub/Sub

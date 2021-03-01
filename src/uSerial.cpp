@@ -106,18 +106,6 @@ bool isUthing(const PortName& fileDescriptor, PortObject& port) {
 	return false;
 }
 
-// void assignChannelID( Uthing& uthing, Bridge* bridge) {
-// 	//-----"device": "uThing::VOC rev.A"----
-// 	 std::string devFullName = uthing.devName();
-// 	 //remove " rev.X"
-// 	std::string devName = devFullName.substr(0, devFullName.size() - 6);
-// 	std::string serial = uthing.serialNumber();
-
-// 	uthing.setChannelID(devName + '_' + serial.substr(serial.length()-4, serial.length()));
-	
-// 	LOG_S(6) << "dev name: " << uthing.devName() <<", ChannelID: " << uthing.channelID();
-// }
-
 void monitorPortsThread(Bridge* bridge) {
 	PortList tempPortList;
 
@@ -158,8 +146,7 @@ void monitorPortsThread(Bridge* bridge) {
 						const std::lock_guard<std::mutex> lck(bridge->mutex_devices);				
 						//key: portName, value: uThing object
 						bridge->devices.emplace(portName, std::move(uThing));
-					
-						// LOG_S(INFO) << bridge->devices.find(portName)->second.info();
+		
 						//create a thread from a member function, with the instance stored on the map, pass the bridge instance too
 						std::thread relayThread(&Uthing::relayThread, &bridge->devices.find(portName)->second, std::ref(*bridge));
 						relayThread.detach();
@@ -172,5 +159,4 @@ void monitorPortsThread(Bridge* bridge) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}//monitor loop
 }
-
 }//namespace ubridge

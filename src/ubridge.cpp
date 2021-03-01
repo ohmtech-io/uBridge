@@ -202,8 +202,6 @@ json Bridge::sendCommandById(const json& jmessage) {
 			LOG_S(INFO) << "Sending command " << request << portID; 
 			{	
 				const std::lock_guard<std::mutex> lck(mutex_devices);
-				//TODO: shouldn't we use a mutex on the specific instance instead?
-				//i.e. each instance will have their own mutex too
 				devices.at(portID).jquery(request);
 			}
 			return "{\"status\":\"OK\"}"_json;
@@ -228,8 +226,6 @@ json Bridge::queryDeviceById(const json& jmessage) {
 			LOG_S(INFO) << "Querying device " << request << portID; 
 			{	
 				const std::lock_guard<std::mutex> lck(mutex_devices);
-				//TODO: shouldn't we use a mutex on the specific instance instead?
-				//i.e. each instance will have their own mutex too
 				response = devices.at(portID).jquery(request);
 			}
 			LOG_S(INFO) << response;

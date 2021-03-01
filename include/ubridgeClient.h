@@ -151,26 +151,6 @@ public:
 		return 0;	
 	}
 
-	// int getDevices(json &deviceList) {
-	// 	try {
-	// 		LOG_S(5) << "Request connected devices.";		
-	// 		req_sock.send("{\"command\":\"getDevices\"}");
-			
-	// 		auto buf = req_sock.recv();
-
-	// 		auto messageRaw = buf.data<char>();
-	// 		LOG_S(5) << "received response: " << messageRaw;
-
-	// 		if (0 == parseMessage(messageRaw, deviceList)){
-	// 			return 0;
-	// 		}
-	// 	} catch( const nng::exception& e ) {
-	// 		LOG_S(WARNING) << "nng Exception: " << e.who() << e.what();			
-	// 		return -1;
-	// 	}
-	// 	return -1;
-	// }
-
 	int subscribe(const char* topic, std::function<void(ubridge::message&)> cb) {
 
 		/* Look here for the all subscription: 
@@ -272,8 +252,6 @@ protected:
 	}
 
 public: 
-	// const char* reqSockUrl;
-	// const char* streamSockUrl;
 	std::string reqSockUrl;
 	std::string streamSockUrl;
 
