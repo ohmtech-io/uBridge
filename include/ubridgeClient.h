@@ -222,11 +222,13 @@ public:
 protected:
 	int request(json& jrequest, json& response) {
 		LOG_S(8) << "Sending request: " << jrequest;		
-		try {
-			auto msg = jrequest.dump();
-			req_sock.send({msg.c_str(), msg.size()});
+		try {                    
+			auto msg = nng::make_msg(0);
+			auto msgStr = jrequest.dump();
+			msg.body().append(nng::view(msgStr.c_str(), msgStr.size()));
+			req_sock.send(std::move(msg));
+
 			//blocking...
-			
 			nng::buffer buf = req_sock.recv();
 			std::string_view messageRaw = {buf.data<char>(), buf.size()};
 			

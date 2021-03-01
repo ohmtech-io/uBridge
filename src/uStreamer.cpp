@@ -57,19 +57,11 @@ int Streamer::start() {
 
 int Streamer::publish(std::string& topic, json& jmessage) {
 	
-	// LOG_S(5) << "PUB -topic: " << topic << " msg: " << jmessage;
-	auto msg = topic + '#' + jmessage.dump();
-
-	LOG_S(7) << "PUB : " << msg;
-	pub_sock.send({msg.c_str(), msg.size()});
-
-// 		message.header().clear();
-// 		message.body().clear();
-// 		message.header().append({topic.c_str(), topic.size()});
-
-// 		std::string serializedMsg = jmessage.dump();
-// 		message.body().append({serializedMsg.c_str(), serializedMsg.size()});
-// 		pub_sock.send(std::move(message));
+	auto msg = nng::make_msg(0);
+	auto msgStr = topic + '#' + jmessage.dump();
+	msg.body().append(nng::view(msgStr.c_str(), msgStr.size()));
+	pub_sock.send(std::move(msg));
+     
 	return 0;
 }
 

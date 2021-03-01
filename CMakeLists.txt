@@ -11,10 +11,10 @@ find_package(nng)
 
 # add_compile_options(-Wall -ggdb3 -O0) #debug
 # add_compile_options(-Wall -O3) #release
-add_compile_options(-Wall -O2)
+add_compile_options(-Wall -O3 -Wno-format-truncation -Wno-psabi) #no-psabi suppress a warning on the JSOn library for GCC 8.x compiler
 
-link_directories("/usr/local/dir")
-set(LIBS -lrt -lnng -lpthread -ldl -lserial )
+link_directories("/usr/local/lib")
+set(LIBS -lrt -lnng -lpthread -ldl -lserial -lstdc++fs -latomic) #stdc++fs and atomic is needed for GCC8.x 
 
 add_executable(ubridge
 	src/main.cpp
@@ -23,16 +23,12 @@ add_executable(ubridge
 	src/uStreamer.cpp
 	src/reqRepServer.cpp
 	src/ubridge.cpp
-	# include/loguru/loguru.cpp
 )
 
 # target_compile_options(ubridge PUBLIC -Wall)
 target_include_directories(ubridge PUBLIC "include")
 # target_link_libraries(ubridge -lrt -lpthread)
 target_link_libraries(ubridge ${LIBS})
-
-# target_link_options(ubridge PRIVATE "-pg")
-
 
 add_executable(consumer
 	src/consumer.cpp
@@ -42,4 +38,7 @@ add_executable(consumer
 target_include_directories(consumer PUBLIC "include")
 target_link_libraries(consumer ${LIBS})
 
+
+
 #  cd build && cmake -GNinja ..
+#  ninja
