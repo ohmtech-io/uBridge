@@ -45,12 +45,12 @@ int main(int argc, char *argv[])
 	cxxopts::Options options("ubridge", "Manages connected uThing devices and acts as a broker for the sensor data and configuration");
 
     options.add_options()
-   		("c,config", "JSON configuration file name", cxxopts::value<std::string>()->default_value("ubridgeConfig.json"))
+   		("c,config", "JSON configuration file name", cxxopts::value<std::string>()->default_value("/etc/ubridge/ubridgeConfig.json"))
         ("v,verbose", "Verbosity output level (0-9)", cxxopts::value<int>()->default_value("0"))
         ("h,help", "Print usage")
     ;
 
-    std::string config_file = "ubridgeConfig.json";
+    std::string config_file;
 
     try {
     	auto result = options.parse(argc, argv);
@@ -64,17 +64,16 @@ int main(int argc, char *argv[])
     		loguru::g_stderr_verbosity = result["verbose"].as<int>();
     	}
 
-    	if (result.count("config")) {
-      		config_file = result["config"].as<std::string>();
-    	}
+    	//use default if no -c parameter was passed
+      	config_file = result["config"].as<std::string>();
     }
     catch (const cxxopts::OptionException& e) {
 		std::cout << "error parsing options: " << e.what() << std::endl;
 		exit(1);
 	}
 
-	loguru::g_preamble_date = false;
-	loguru::g_preamble_time = false;
+	// loguru::g_preamble_date = false;
+	// loguru::g_preamble_time = false;
 
 	loguru::init(argc, argv);
 	// Only log INFO, WARNING, ERROR and FATAL

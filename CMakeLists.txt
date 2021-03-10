@@ -38,7 +38,9 @@ add_executable(consumer
 target_include_directories(consumer PUBLIC "include")
 target_link_libraries(consumer ${LIBS})
 
-
+install(TARGETS ubridge DESTINATION bin COMPONENT binaries)
+install(TARGETS consumer DESTINATION bin COMPONENT binaries)
+install(FILES ubridgeConfig.json DESTINATION /etc/ubridge COMPONENT config)
 
 #  cd build && cmake -GNinja ..
 #  ninja

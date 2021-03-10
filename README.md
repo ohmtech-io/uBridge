@@ -22,6 +22,7 @@ sudo apt install g++ git autogen autoconf build-essential cmake graphviz \
                  python3-sphinx-rtd-theme
 
 git clone https://github.com/crayzeewulf/libserial.git
+cd libserial
 git checkout 1d1e47a
 ./compile.sh
 cd build
@@ -32,7 +33,7 @@ sudo make install
   $ cd /tmp
   $ git clone https://github.com/nanomsg/nng.git
   $ cd nng
-  $ ccheckout 9d6b241
+  $ git checkout 9d6b241
   $ mkdir build
   $ cd build
   
