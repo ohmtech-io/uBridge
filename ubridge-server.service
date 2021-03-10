@@ -1,0 +1,14 @@
+[Unit]
+Description=Ubridge Server
+# When systemd stops or restarts the ubridge.service, the action is propagated to this unit
+PartOf=ubridge.service
+After=ubridge.service
+
+[Service]
+ExecStart=/usr/local/bin/ubridge
+# Restart the service on non-zero exit code when terminated by a signal other than SIGHUP, SIGINT, SIGTERM or SIGPIPE
+Restart=on-failure
+
+[Install]
+# This unit should start when ubridge.service is starting
+WantedBy=ubridge.service

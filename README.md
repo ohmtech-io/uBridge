@@ -47,8 +47,23 @@ sudo make install
 ## Building
 
 mkdir build 
-cd build && cmake -GNinja ..
+<!-- cd build && cmake -GNinja .. -->
 
-or just:
-cmake ..
+<!-- or just: -->
+cd build && cmake ..
 make
+
+## Installing service
+
+sudo make install
+sudo systemctl enable ubridge ubridge-server
+
+## Starting the service
+
+sudo systemctl start ubridge
+
+## Monitoring
+ systemctl status ubridge-server.service
+
+### Log file
+tail /tmp/ubridge.log

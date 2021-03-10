@@ -41,6 +41,7 @@ target_link_libraries(consumer ${LIBS})
 install(TARGETS ubridge DESTINATION bin COMPONENT binaries)
 install(TARGETS consumer DESTINATION bin COMPONENT binaries)
 install(FILES ubridgeConfig.json DESTINATION /etc/ubridge COMPONENT config)
+install(FILES ubridge.service ubridge-server.service DESTINATION /etc/systemd/system/ COMPONENT service)
 
 #  cd build && cmake -GNinja ..
 #  ninja
