@@ -25,6 +25,7 @@ sudo apt install g++ git autogen autoconf build-essential cmake graphviz \
                  python3-sip-dev doxygen python3-sphinx pkg-config \
                  python3-sphinx-rtd-theme
 
+cd /tmp
 git clone https://github.com/crayzeewulf/libserial.git
 cd libserial
 git checkout 1d1e47a
@@ -52,12 +53,15 @@ sudo ninja install
 ## Building ubridge
 
 ```bash
+cd /tmp
+git clone https://github.com/damancusonqn/urelay.git
+cd urelay
 mkdir build 
 cd build && cmake ..
 make
 ```
 
-## Installi service
+## Install service
 
 ```bash
 sudo make install
