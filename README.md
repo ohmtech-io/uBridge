@@ -1,10 +1,13 @@
 # ubridge
 
 ## Instalation instructions
-
+```bash
 sudo apt update
+```
 optional:
+```bash
 sudo apt upgrade
+```
 
 ### Pre-requisites 
 
@@ -14,7 +17,7 @@ sudo apt install git cmake ninja-build
 <!-- sudo apt-get install build-essential gawk gcc g++ gfortran git texinfo bison  wget bzip2 libncurses-dev libssl-dev openssl zlib1g-dev -->
 
 
-#### Libserial
+### Libserial
 
 ```bash
 sudo apt install g++ git autogen autoconf build-essential cmake graphviz \
@@ -35,39 +38,33 @@ sudo ldconfig
 ### NNG
 
 ```bash
-$ cd /tmp
-$ git clone https://github.com/nanomsg/nng.git
-$ cd nng
-$ git checkout 9d6b241
-$ mkdir build
-$ cd build
+cd /tmp
+git clone https://github.com/nanomsg/nng.git
+cd nng
+git checkout 9d6b241
+mkdir build
+cd build
 
-$ cmake -G Ninja ..
-$ ninja
-$ ninja test #The following tests FAILED:
-			 #30 - nng.sp.transport.tcp.tcp_test (Failed)
-			 #but it doesn't seem to create an issue for ubridge
-$ sudo ninja install
+cmake -G Ninja ..
+ninja
+sudo ninja install
 ```
-## Building
+## Building ubridge
 
 ```bash
 mkdir build 
-<!-- cd build && cmake -GNinja .. -->
-
-<!-- or just: -->
 cd build && cmake ..
 make
 ```
 
-## Installing service
+## Installi service
 
 ```bash
 sudo make install
 sudo systemctl enable ubridge ubridge-server
 ```
 
-## Starting the service
+## Start the service
 ``` bash
 sudo systemctl start ubridge
 ```
