@@ -57,8 +57,8 @@ sudo ninja install
 
 ```bash
 cd /tmp
-git clone https://github.com/damancusonqn/urelay.git
-cd urelay
+git clone https://github.com/ohmtech-io/uBridge.git
+cd ubridge
 mkdir build 
 cd build && cmake ..
 make
