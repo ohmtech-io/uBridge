@@ -1,6 +1,8 @@
 # ubridge
 __uBridge__ is a lightweight, modular application that can log data into CSV files, publish into InfluxDB databases and MQTT servers.
 
+![uBridge](/img/uBridge-2.png)
+
 More info on: https://docs.ohmtech.io/ubridge/intro
 
 ## Instalation instructions
