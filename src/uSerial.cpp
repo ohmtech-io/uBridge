@@ -158,7 +158,7 @@ void monitorPortsThread(Bridge* bridge) {
 				LOG_S(9) << "device at " << portName << " already created";
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 	}//monitor loop
 }
 }//namespace ubridge

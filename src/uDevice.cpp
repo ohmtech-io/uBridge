@@ -36,10 +36,10 @@ namespace ubridge {
 
 const uThingQueries_t uThingQueries;
 
-Uthing::Uthing(const PortName& portName, PortObject portObj): 
-					_portName(portName), 
-					_port(std::move(portObj)) 
+Uthing::Uthing(const PortName& portName): 
+					_portName(portName)
 {
+	_port.Open(_portName);
 	json resp = query(uThingQueries.info);
 	if (resp.contains("error")) {
 		 throw std::runtime_error("failed to gather device information"); 
@@ -48,6 +48,25 @@ Uthing::Uthing(const PortName& portName, PortObject portObj):
 	_fwVersion = resp["info"]["firmware"];
 	_serialNumber = resp["info"]["serial"];
 }
+
+// Add move constructor
+Uthing::Uthing(Uthing&& other) noexcept:
+    _portName(std::move(other._portName)),
+    //_port(std::move(other._port)),
+    _devName(std::move(other._devName)),
+    _fwVersion(std::move(other._fwVersion)),
+    _serialNumber(std::move(other._serialNumber)),
+    _channelID(std::move(other._channelID)),
+    _lastUpTime(other._lastUpTime),
+    _messagesReceived(other._messagesReceived),
+    _messagesSent(other._messagesSent)
+{
+    // Reset counters and values in the source object
+    other._lastUpTime = 0;
+    other._messagesReceived = 0;
+    other._messagesSent = 0;
+}
+
 
 //getters:
 std::string Uthing::portName() {return _portName;}
@@ -123,6 +142,8 @@ void Uthing::relayThread(Bridge& bridge) {
 	LOG_S(INFO) << "Device thread created..." << info();
 	std::string inMessage;
 
+	_port.Open(_portName);
+
 	while(true) {
 		try {
 			if (_port.IsDataAvailable()) {
@@ -159,8 +180,8 @@ void Uthing::relayThread(Bridge& bridge) {
 			LOG_S(INFO) << "Removing "<< _devName << " on " << _portName;
 			
 			const std::lock_guard<std::mutex> lck(bridge.mutex_devices);	
-			_port.Close();
-			bridge.devices.erase(_portName);
+			//_port.Close();
+			// bridge.devices.erase(_portName);
 
 			return;	
 		}

@@ -49,6 +49,7 @@ struct uThingQueries_t {
 class Uthing {
 public:	
 	Uthing(const PortName& portName);
+	Uthing(Uthing&& other) noexcept;  // Move constructor
 
 	//getters:
 	std::string portName();
