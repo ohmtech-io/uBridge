@@ -54,7 +54,8 @@ void findPorts(std::string devNameBase, PortList& portList) {
 	}
 }
 
-bool isUthing(const PortName& fileDescriptor, PortObject& port) {
+bool isUthing(const PortName& fileDescriptor) {
+	PortObject port;
 	try {
 		port.Open(fileDescriptor);
 
@@ -132,14 +133,15 @@ void monitorPortsThread(Bridge* bridge) {
 
 			/* first check if a device is not already created on this port */
 			if (bridge->devices.find(portName) == bridge->devices.end()) {				
-				PortObject tempPort;
+				// PortObject tempPort;
 				json info;
 
 				LOG_S(5) << "Fetching info from device on " << portName;
-				if (isUthing(portName, tempPort)) {
+				if (isUthing(portName)) {
 					LOG_S(INFO) << "new uThing detected at " << portName;
-				
-					Uthing uThing(portName, std::move(tempPort));
+
+					// PortObject port;
+					Uthing uThing(portName);
 					uThing.assignChannelID();
 					
 					{
@@ -156,7 +158,7 @@ void monitorPortsThread(Bridge* bridge) {
 				LOG_S(9) << "device at " << portName << " already created";
 			}
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		std::this_thread::sleep_for(std::chrono::milliseconds(2500));
 	}//monitor loop
 }
 }//namespace ubridge

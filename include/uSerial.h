@@ -38,7 +38,7 @@ class Bridge;
 // void monitorPortsThread(Devices& devices, std::mutex& mutex_devices, Config& config);
 void monitorPortsThread(Bridge* bridge);
 void findPorts(std::string devNameBase, PortList& portList);
-bool isUthing(const PortName& fileDescriptor, PortObject& port);
+bool isUthing(const PortName& fileDescriptor);
 	
 
 }//namespace ubridge
