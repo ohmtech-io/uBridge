@@ -1,7 +1,7 @@
 # ubridge
 __uBridge__ is a lightweight, modular application that can log data into CSV files, publish into InfluxDB databases and MQTT servers.
 
-![uBridge](/img/uBridge-2.png)
+![uBridge](/img/uBridge-diagram.svg)
 
 More info on: https://docs.ohmtech.io/ubridge/intro
 
@@ -25,19 +25,7 @@ sudo apt install git cmake ninja-build
 ### Libserial
 
 ```bash
-sudo apt install g++ git autogen autoconf build-essential cmake graphviz \
-                 libboost-dev libboost-test-dev libgtest-dev libtool \
-                 python3-sip-dev doxygen python3-sphinx pkg-config \
-                 python3-sphinx-rtd-theme
-
-cd /tmp
-git clone https://github.com/crayzeewulf/libserial.git
-cd libserial
-git checkout 1d1e47a
-./compile.sh
-cd build
-sudo make install
-sudo ldconfig
+sudo apt install libserial-dev
 ```
 
 
