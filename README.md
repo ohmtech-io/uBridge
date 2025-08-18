@@ -5,6 +5,7 @@ uBridge is a lightweight, modular C++ service that detects and manages uThing de
 ![uBridge](/img/ubridge-diagram.svg)
 
 Official documentation: https://docs.ohmtech.io/uBridge/intro/
+Client libraries (MQTT, CSV logging, InfluxDB, etc.): https://github.com/ohmtech-io/uBridge-plugins
 
 ## Features
 - Device auto-discovery of connected uThing devices (USB serial)
